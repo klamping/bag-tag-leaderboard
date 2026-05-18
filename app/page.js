@@ -1,21 +1,9 @@
 import leaderboardQuery from "../lib/leaderboardQuery.js";
 import { createElement } from "react";
+import demoLeaderboard from "../lib/demoLeaderboard.js";
 
 const { getSeasonLeaderboardRows } = leaderboardQuery;
-
-const DEMO_ROWS = [
-  { playerId: "p01", playerName: "Alex", eventsPlayed: 6, seasonPoints: 52, rank: 1 },
-  { playerId: "p02", playerName: "Blair Johnson", eventsPlayed: 6, seasonPoints: 46, rank: 2 },
-  { playerId: "p11", playerName: "Bailey", eventsPlayed: 6, seasonPoints: 46, rank: 2 },
-  { playerId: "p03", playerName: "Casey Longlastname Example", eventsPlayed: 6, seasonPoints: 44, rank: 3 },
-  { playerId: "p04", playerName: "Devon", eventsPlayed: 6, seasonPoints: 44, rank: 3 },
-  { playerId: "p05", playerName: "Emerson", eventsPlayed: 5, seasonPoints: 39, rank: 6 },
-  { playerId: "p06", playerName: "Franklin", eventsPlayed: 5, seasonPoints: 37, rank: 7 },
-  { playerId: "p07", playerName: "Gwendolyn Rivera", eventsPlayed: 5, seasonPoints: 33, rank: 8 },
-  { playerId: "p08", playerName: "Harper", eventsPlayed: 4, seasonPoints: 30, rank: 9 },
-  { playerId: "p09", playerName: "Indigo-Mae", eventsPlayed: 4, seasonPoints: 28, rank: 10 },
-  { playerId: "p10", playerName: "Jordan", eventsPlayed: 4, seasonPoints: 28, rank: 10 },
-];
+const { scoreDemoSeason } = demoLeaderboard;
 
 function loadLeaderboardRows() {
   return getSeasonLeaderboardRows({
@@ -68,14 +56,14 @@ function renderBodyRows(rows, demoMode) {
   const computedRanks = getSharedRanks(rows);
 
   return rows.map((row, index) => {
-    const rank = demoMode && row.rank != null ? row.rank : computedRanks[index];
+    const rank = computedRanks[index];
     return renderLeaderboardRow(row, rank);
   });
 }
 
 export default function HomePage({ loadRows = loadLeaderboardRows, searchParams = {} } = {}) {
   const demoMode = searchParams.demo === "1";
-  const rows = demoMode ? DEMO_ROWS : loadRows();
+  const rows = demoMode ? scoreDemoSeason().leaderboardRows : loadRows();
   const bodyRows = renderBodyRows(rows, demoMode);
 
   return createElement(

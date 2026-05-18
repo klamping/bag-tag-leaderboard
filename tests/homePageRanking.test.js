@@ -16,3 +16,15 @@ test("non-demo mode computes shared ranks from season points", async () => {
 
   assert.deepEqual(rankCells, [1, 2, 2]);
 });
+
+test("demo mode uses fixture-scored aggregates and preserves shared-rank display", async () => {
+  const { default: HomePage } = await import("../app/page.js");
+
+  const html = renderToStaticMarkup(HomePage({ searchParams: { demo: "1" } }));
+  const rankCells = Array.from(html.matchAll(/<tr><td>(\d+)<\/td><td>/g), (match) => Number(match[1]));
+
+  assert.equal(html.includes("Demo Data"), true);
+  assert.deepEqual(rankCells, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  assert.equal(html.includes("Blair"), true);
+  assert.equal(html.includes("Casey"), true);
+});
