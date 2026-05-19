@@ -60,8 +60,8 @@ test("uses demo rows and badge when demo=1", () => {
   assert.equal(called, false);
   assert.match(markup, /Demo Data/);
   assert.match(markup, /Casey/);
-  assert.match(markup, /<td>1<\/td><td>Alex<\/td><td>3<\/td><td>57<\/td>/);
-  assert.match(markup, /<td>3<\/td><td>Casey<\/td><td>3<\/td><td>52<\/td>/);
+  assert.match(markup, /<td>1<\/td><td>Blair<\/td><td>5<\/td><td>83<\/td>/);
+  assert.match(markup, /<td>3<\/td><td>Casey<\/td><td>5<\/td><td>72<\/td>/);
 });
 
 test("uses live loader when demo query param is absent", () => {
