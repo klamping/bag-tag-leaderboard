@@ -89,7 +89,6 @@ Source plans:
 
 ## Later Phases (Queued)
 
-- `[ ]` Phase 2B: Public Event Views (`/events`, `/events/:slug`)
 - `[ ]` Phase 3: Admin Access + Event Draft Creation
 - `[ ]` Phase 4: UDisc Fetch + Draft Preview
 - `[ ]` Phase 5: Starting Tag Entry + Validation
@@ -99,7 +98,61 @@ Source plans:
 
 ## Current Snapshot
 
-- Active branch: `master`
+- Active branch: `merge-phase2b-into-master-wip`
 - Phase 1 status: complete
 - Phase 2A status: complete
-- Recommended next step: begin Phase 2B planning/tasks (`/events` and `/events/:slug`)
+- Phase 2B status: complete (public event routes + hardening + normalization)
+- Recommended next step: begin Phase 3 planning/tasks
+
+## Phase 6: Public Event Views (`/events`, `/events/:slug`)
+
+### Task 6.1 - Public events query contract
+
+- Status: `[x] Completed`
+- Notes:
+  - Added `lib/publicEventsQuery.js` with confirmed-only list and slug-based scoreboard query.
+  - Added `tests/publicEventsQuery.test.js` for filtering, ordering, row shape, and null slug behavior.
+
+### Task 6.2 - Render `/events` list page
+
+- Status: `[x] Completed`
+- Notes:
+  - Added `app/events/page.js` with heading, event links, and empty state.
+  - Preserves `?demo=1` in event links during demo browsing.
+
+### Task 6.3 - Render `/events/:slug` scoreboard page
+
+- Status: `[x] Completed`
+- Notes:
+  - Added `app/events/[slug]/page.js` with required scoring columns and not-found handling.
+  - Added `Event Result` column to show finish place per player.
+  - Added empty-scoreboard state.
+
+### Task 6.4 - Demo data and tag-rule alignment
+
+- Status: `[x] Completed`
+- Notes:
+  - Wired `/events` and `/events/:slug` to demo fixtures when `?demo=1` is set.
+  - Fixed demo starting tag rendering and applied no `Tag #1 Bonus` in `initial-no-tags` event.
+  - Added two demo events (`post-initial-weekly`, `post-major-weekly`) in requested order.
+  - Updated fixture regressions to match expanded demo season outputs.
+
+### Task 6.5 - P0 integrity hardening (TDD)
+
+- Status: `[x] Completed`
+- Notes:
+  - `scoreEvent` now rejects duplicate `playerId` entries within a single event.
+  - `scoreEvent` now rejects non-object participant rows and invalid `startingTag` values (`< 1`).
+  - `leaderboardQuery` now defensively dedupes duplicate `(eventId, playerId)` result rows.
+  - Added regression coverage for dedupe key safety when IDs contain `:` characters.
+  - `publicEventsQuery` scoreboard path now dedupes duplicate rows per player defensively.
+
+### Task 6.6 - P1 contract normalization (TDD)
+
+- Status: `[x] Completed`
+- Notes:
+  - Added shared confirmed-event semantics via `lib/isConfirmedEvent.js` and applied to leaderboard/public queries.
+  - Confirmed events now include both `confirmed === true` and `status === "confirmed"` shapes.
+  - Added shared numeric-safe points resolver in `lib/resolvePointsValue.js`.
+  - Leaderboard/public query points contracts now support precedence: `points` -> `eventTotal` -> `event_total_pts`.
+  - Added targeted tests for status-based confirmation, points precedence, and numeric coercion safety.

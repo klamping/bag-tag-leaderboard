@@ -275,15 +275,38 @@ test("throws for missing or invalid finishPlace", () => {
   );
 });
 
-test("duplicate playerId rows score independently and deterministically", () => {
-  const scored = scoreEvent({
-    participants: [
-      { playerId: "dup", finishPlace: 1, startingTag: 9 },
-      { playerId: "dup", finishPlace: 2, startingTag: 1 },
-      { playerId: "p3", finishPlace: 3, startingTag: 5 },
-    ],
-  });
+test("throws for non-object participant entries", () => {
+  assert.throws(
+    () => scoreEvent({ participants: [null] }),
+    /Participant at index 0 must be an object/
+  );
+  assert.throws(
+    () => scoreEvent({ participants: ["p1"] }),
+    /Participant at index 0 must be an object/
+  );
+});
 
-  assert.equal(scored[0].beatYourTagBonus, 1);
-  assert.equal(scored[1].beatYourTagBonus, 0);
+test("throws for invalid startingTag values", () => {
+  assert.throws(
+    () => scoreEvent({ participants: [{ playerId: "p1", finishPlace: 1, startingTag: 0 }] }),
+    /Participant p1 has invalid startingTag; expected integer >= 1/
+  );
+  assert.throws(
+    () => scoreEvent({ participants: [{ playerId: "p1", finishPlace: 1, startingTag: -2 }] }),
+    /Participant p1 has invalid startingTag; expected integer >= 1/
+  );
+});
+
+test("throws for duplicate playerId within a single event", () => {
+  assert.throws(
+    () =>
+      scoreEvent({
+        participants: [
+          { playerId: "dup", finishPlace: 1, startingTag: 9 },
+          { playerId: "dup", finishPlace: 2, startingTag: 1 },
+          { playerId: "p3", finishPlace: 3, startingTag: 5 },
+        ],
+      }),
+    /Duplicate playerId "dup" in event participants/
+  );
 });
