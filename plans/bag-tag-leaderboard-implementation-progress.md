@@ -56,7 +56,7 @@ Source plan: `plans/bag-tag-leaderboard-phase-1.md`
 - `[ ]` Phase 3: UDisc Fetch + Draft Preview
 - `[ ]` Phase 4: Starting Tag Entry + Validation
 - `[ ]` Phase 5: Points Breakdown + Confirm Import
-- `[~]` Phase 6: Public Event Views (`/events`, `/events/:slug`)
+- `[x]` Phase 6: Public Event Views (`/events`, `/events/:slug`)
 - `[ ]` Phase 7: Post-Confirm Edits + Audit Trail
 - `[ ]` Phase 8: Failure and Integrity Hardening
 
@@ -64,8 +64,8 @@ Source plan: `plans/bag-tag-leaderboard-phase-1.md`
 
 - Active branch: `phase-2b-public-events`
 - Phase 1 status: complete
-- Phase 6 status: in progress (public event routes implemented with demo support)
-- Recommended next step: run full suite + build, then finalize Phase 6 completion
+- Phase 6 status: complete (routes, query hardening, and contract normalization verified)
+- Recommended next step: begin Phase 7 planning/tasks
 
 ## Phase 6: Public Event Views (`/events`, `/events/:slug`)
 
