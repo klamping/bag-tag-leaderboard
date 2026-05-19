@@ -36,3 +36,16 @@ Improve by 1–2 positions: +1 point
 
 Ties
 Tied players at the end of the event share placement/points
+
+Starting Tag Duplication Rules
+
+Duplicate starting tags are allowed only when a player is newly joining mid-season and inherits the entry tag
+Duplicate starting tags are allowed when league policy explicitly assigns the same provisional tag to multiple late joiners
+
+Duplicate starting tags are not allowed if both players already had established tags before the event
+Duplicate starting tags are not allowed when caused by admin data-entry mistakes
+Duplicate starting tags are not allowed if they conflict with a previously confirmed event assignment and no correction workflow is used
+
+When duplicate starting tags are allowed:
+Players sharing the same starting tag share the same starting rank (competition ranking)
+No secondary tiebreak (alphabetical/random/prior points) is used for starting-rank calculations
