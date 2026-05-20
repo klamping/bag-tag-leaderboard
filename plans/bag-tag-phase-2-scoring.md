@@ -52,10 +52,10 @@ Implement placement scoring with tie-aware logic: fixed points for 1st-4th, then
 
 ### Acceptance criteria
 
-- [ ] Placement points for 1st-4th are applied exactly.
-- [ ] Top-50% and top-75% cutoffs use `ceil(fieldSize * threshold)`.
-- [ ] Tied players at cutoff are included in the same placement tier.
-- [ ] Competition ranking semantics are used for finish-rank dependent calculations.
+- [x] Placement points for 1st-4th are applied exactly.
+- [x] Top-50% and top-75% cutoffs use `ceil(fieldSize * threshold)`.
+- [x] Tied players at cutoff are included in the same placement tier.
+- [x] Competition ranking semantics are used for finish-rank dependent calculations.
 
 ---
 
@@ -72,11 +72,11 @@ Implement starting-tag-dependent categories with robust edge handling. Missing s
 
 ### Acceptance criteria
 
-- [ ] Missing starting tags do not block scoring and yield zero for tag-dependent categories.
-- [ ] Starting tag bonus counts worse tags and caps at 6.
-- [ ] Tag #1 bonus applies only when starting tag is 1.
-- [ ] Beat-your-tag bonus thresholds (+1/+2/+3) match documented improvement bands.
-- [ ] Equal starting tags share starting rank (no secondary tiebreak).
+- [x] Missing starting tags do not block scoring and yield zero for tag-dependent categories.
+- [x] Starting tag bonus counts worse tags and caps at 6.
+- [x] Tag #1 bonus applies only when starting tag is 1.
+- [x] Beat-your-tag bonus thresholds (+1/+2/+3) match documented improvement bands.
+- [x] Equal starting tags share starting rank (no secondary tiebreak).
 
 ---
 
@@ -93,10 +93,10 @@ Expand demo data into a small fixture set of multiple fake events scored through
 
 ### Acceptance criteria
 
-- [ ] Demo fixture set includes initial-no-tags, major-doubled, and normal mixed-participation events.
-- [ ] Demo leaderboard aggregates from scored event fixture outputs (not ad-hoc hardcoded totals).
-- [ ] Demo mode remains URL-driven (`?demo=1`) and clearly labeled.
-- [ ] Tie-rank display remains correct in demo leaderboard output.
+- [x] Demo fixture set includes initial-no-tags, major-doubled, and normal mixed-participation events.
+- [x] Demo leaderboard aggregates from scored event fixture outputs (not ad-hoc hardcoded totals).
+- [x] Demo mode remains URL-driven (`?demo=1`) and clearly labeled.
+- [x] Tie-rank display remains correct in demo leaderboard output.
 
 ---
 
@@ -113,8 +113,8 @@ Add a solid unit/integration test suite linked directly to `point-rules.md` cate
 
 ### Acceptance criteria
 
-- [ ] Tests are named and grouped by rule categories from `point-rules.md`.
-- [ ] Category-level tests cover attendance, placement, starting-tag bonus, tag #1 bonus, beat-your-tag bonus, and ties.
-- [ ] Validation tests cover required-field failures and accepted optional starting-tag behavior.
-- [ ] Scenario tests cover all required fake event types and shared starting-tag cases.
-- [ ] Regression assertions verify both per-event breakdowns and season aggregate outputs.
+- [x] Tests are named and grouped by rule categories from `point-rules.md`.
+- [x] Category-level tests cover attendance, placement, starting-tag bonus, tag #1 bonus, beat-your-tag bonus, and ties.
+- [x] Validation tests cover required-field failures and accepted optional starting-tag behavior.
+- [x] Scenario tests cover all required fake event types and shared starting-tag cases.
+- [x] Regression assertions verify both per-event breakdowns and season aggregate outputs.
