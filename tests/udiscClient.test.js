@@ -1,29 +1,50 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { fetchUdiscEvent } = require("../lib/udiscClient.js");
+const { fetchUdiscEventFromUrl } = require("../lib/udiscClient.js");
 
-test("fetchUdiscEvent returns json on success", async () => {
-  const result = await fetchUdiscEvent({
-    eventId: "abc",
-    token: "t",
-    fetchImpl: async () => ({ ok: true, json: async () => ({ id: "abc" }) }),
-  });
-  assert.deepEqual(result, { id: "abc" });
+test("fetchUdiscEventFromUrl throws VALIDATION_ERROR for invalid host", async () => {
+  await assert.rejects(
+    fetchUdiscEventFromUrl({ leaderboardUrl: "https://example.com/events/demo/leaderboard" }),
+    (error) => error.type === "VALIDATION_ERROR"
+  );
 });
 
-test("fetchUdiscEvent maps status categories", async () => {
-  for (const [status, type] of [[401, "AUTH_ERROR"], [403, "AUTH_ERROR"], [404, "NOT_FOUND"], [429, "RATE_LIMITED"], [500, "UPSTREAM_ERROR"]]) {
+test("fetchUdiscEventFromUrl throws VALIDATION_ERROR for invalid path", async () => {
+  await assert.rejects(
+    fetchUdiscEventFromUrl({ leaderboardUrl: "https://udisc.com/events/demo/results" }),
+    (error) => error.type === "VALIDATION_ERROR"
+  );
+});
+
+test("fetchUdiscEventFromUrl maps response statuses to typed errors", async () => {
+  for (const [status, type] of [[404, "NOT_FOUND"], [429, "RATE_LIMITED"], [500, "UPSTREAM_ERROR"], [418, "UPSTREAM_ERROR"]]) {
     await assert.rejects(
-      fetchUdiscEvent({ eventId: "abc", token: "t", fetchImpl: async () => ({ ok: false, status }) }),
+      fetchUdiscEventFromUrl({
+        leaderboardUrl: "https://udisc.com/events/demo/leaderboard",
+        fetchImpl: async () => ({ ok: false, status }),
+      }),
       (error) => error.type === type
     );
   }
 });
 
-test("fetchUdiscEvent handles missing token and network errors", async () => {
-  await assert.rejects(fetchUdiscEvent({ eventId: "abc", token: "" }), (error) => error.type === "CONFIG_ERROR");
+test("fetchUdiscEventFromUrl maps fetch exceptions to NETWORK_ERROR", async () => {
   await assert.rejects(
-    fetchUdiscEvent({ eventId: "abc", token: "t", fetchImpl: async () => { throw new Error("boom"); } }),
+    fetchUdiscEventFromUrl({
+      leaderboardUrl: "https://www.udisc.com/events/demo/leaderboard",
+      fetchImpl: async () => {
+        throw new Error("boom");
+      },
+    }),
     (error) => error.type === "NETWORK_ERROR"
   );
+});
+
+test("fetchUdiscEventFromUrl returns html payload on success", async () => {
+  const result = await fetchUdiscEventFromUrl({
+    leaderboardUrl: "https://udisc.com/events/demo/leaderboard",
+    fetchImpl: async () => ({ ok: true, text: async () => "<html>scorecard</html>" }),
+  });
+
+  assert.deepEqual(result, { html: "<html>scorecard</html>" });
 });
