@@ -12,46 +12,52 @@ function buildValidInput(overrides = {}) {
   };
 }
 
-test("rejects missing required fields with Validation failed", async () => {
-  await assert.rejects(
-    () =>
-      createEventDraft({
-        input: buildValidInput({ slug: "" }),
-        findEventBySlug: async () => null,
-        insertEventDraft: async () => {
-          throw new Error("should not insert");
-        },
-      }),
-    /Validation failed/
-  );
+test("returns field error when required slug is missing", async () => {
+  const result = await createEventDraft({
+    input: buildValidInput({ slug: "" }),
+    findEventBySlug: async () => null,
+    insertEventDraft: async () => {
+      throw new Error("should not insert");
+    },
+  });
+
+  assert.deepEqual(result, {
+    fieldErrors: {
+      slug: "Slug is required",
+    },
+  });
 });
 
-test("rejects invalid slug format", async () => {
-  await assert.rejects(
-    () =>
-      createEventDraft({
-        input: buildValidInput({ slug: "Bad Slug!" }),
-        findEventBySlug: async () => null,
-        insertEventDraft: async () => {
-          throw new Error("should not insert");
-        },
-      }),
-    /Validation failed/
-  );
+test("returns field error for invalid slug format", async () => {
+  const result = await createEventDraft({
+    input: buildValidInput({ slug: "Bad Slug!" }),
+    findEventBySlug: async () => null,
+    insertEventDraft: async () => {
+      throw new Error("should not insert");
+    },
+  });
+
+  assert.deepEqual(result, {
+    fieldErrors: {
+      slug: "Slug format is invalid",
+    },
+  });
 });
 
-test("rejects duplicate slug", async () => {
-  await assert.rejects(
-    () =>
-      createEventDraft({
-        input: buildValidInput(),
-        findEventBySlug: async () => ({ id: "evt_existing" }),
-        insertEventDraft: async () => {
-          throw new Error("should not insert");
-        },
-      }),
-    /Validation failed/
-  );
+test("returns field error when slug already exists", async () => {
+  const result = await createEventDraft({
+    input: buildValidInput(),
+    findEventBySlug: async () => ({ id: "evt_existing" }),
+    insertEventDraft: async () => {
+      throw new Error("should not insert");
+    },
+  });
+
+  assert.deepEqual(result, {
+    fieldErrors: {
+      slug: "Slug is already in use",
+    },
+  });
 });
 
 test("creates draft with normalized shape and status draft", async () => {
@@ -84,4 +90,29 @@ test("creates draft with normalized shape and status draft", async () => {
     eventDate: "2026-04-12",
     status: "draft",
   });
+});
+
+test("returns fieldErrors and never writes on validation failure", async () => {
+  let lookupCalls = 0;
+  let insertCalls = 0;
+
+  const result = await createEventDraft({
+    input: buildValidInput({ slug: "" }),
+    findEventBySlug: async () => {
+      lookupCalls += 1;
+      return null;
+    },
+    insertEventDraft: async () => {
+      insertCalls += 1;
+      return { id: "evt_should_not_exist" };
+    },
+  });
+
+  assert.deepEqual(result, {
+    fieldErrors: {
+      slug: "Slug is required",
+    },
+  });
+  assert.equal(lookupCalls, 0);
+  assert.equal(insertCalls, 0);
 });
