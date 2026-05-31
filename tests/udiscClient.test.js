@@ -46,6 +46,53 @@ test("fetchUdiscEventFromUrl accepts www host and trailing slash", async () => {
   });
 });
 
+test("fetchUdiscEventFromUrl preserves query params in outbound request url", async () => {
+  const fetchCalls = [];
+
+  await fetchUdiscEventFromUrl({
+    leaderboardUrl: "https://udisc.com/events/demo/leaderboard?division=fa1&page=2",
+    fetchImpl: async (url) => {
+      fetchCalls.push(url);
+      return {
+        ok: true,
+        text: async () =>
+          '<script type="application/ld+json">{"name":"Spring Open","startDate":"2026-05-01","url":"https://udisc.com/events/spring-open/leaderboard","competitor":[{"name":"A Player","identifier":"1","position":1}]}</script>',
+      };
+    },
+  });
+
+  assert.deepEqual(fetchCalls, ["https://udisc.com/events/demo/leaderboard?division=fa1&page=2"]);
+});
+
+test("fetchUdiscEventFromUrl sends browser-like headers", async () => {
+  const fetchCalls = [];
+
+  await fetchUdiscEventFromUrl({
+    leaderboardUrl: "https://udisc.com/events/demo/leaderboard",
+    fetchImpl: async (...args) => {
+      fetchCalls.push(args);
+      return {
+        ok: true,
+        text: async () =>
+          '<script type="application/ld+json">{"name":"Spring Open","startDate":"2026-05-01","url":"https://udisc.com/events/spring-open/leaderboard","competitor":[{"name":"A Player","identifier":"1","position":1}]}</script>',
+      };
+    },
+  });
+
+  assert.equal(fetchCalls.length, 1);
+  assert.equal(fetchCalls[0][0], "https://udisc.com/events/demo/leaderboard");
+  assert.deepEqual(fetchCalls[0][1], {
+    headers: {
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Cache-Control": "no-cache",
+      Pragma: "no-cache",
+      "Upgrade-Insecure-Requests": "1",
+      "User-Agent": "Mozilla/5.0",
+    },
+  });
+});
+
 test("fetchUdiscEventFromUrl rejects non-https protocol", async () => {
   await assert.rejects(
     fetchUdiscEventFromUrl({ leaderboardUrl: "http://udisc.com/events/demo/leaderboard" }),

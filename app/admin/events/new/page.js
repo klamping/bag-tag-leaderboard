@@ -13,7 +13,7 @@ const { createEventDraft } = createEventDraftModule;
 const { findEventBySlug, insertEventDraft } = eventDraftStore;
 const { getPublicEventScoreboardBySlug } = publicEventsQuery;
 const { getEventsData } = eventsDataModule;
-const { fetchUdiscEvent } = udiscClientModule;
+const { fetchUdiscEventFromUrl } = udiscClientModule;
 const { mapUdiscEventToDraftPreview } = udiscToDraftPreviewModule;
 
 async function findNonDraftEventBySlug(slug) {
@@ -58,7 +58,7 @@ function messageForUdiscError(type) {
   if (type === "RATE_LIMITED") return "UDisc is rate limiting requests. Please try again shortly.";
   if (type === "VALIDATION_ERROR") return "Please enter a valid UDisc leaderboard URL.";
   if (type === "UPSTREAM_FORMAT_CHANGED") {
-    return "UDisc changed their leaderboard format. Please try again later.";
+    return "UDisc changed their leaderboard format. Please verify URL and try again.";
   }
   if (type === "MAPPING_ERROR") {
     return "UDisc leaderboard data could not be processed. Please try again later.";
@@ -117,7 +117,7 @@ export function createAdminDraftEventAction({
 
 export function createFetchUdiscPreviewAction({
   requireAdminAccess = requireAdmin,
-  fetchUdiscEventAdapter = fetchUdiscEvent,
+  fetchUdiscEventAdapter = fetchUdiscEventFromUrl,
   mapUdiscEventToDraftPreviewAdapter = mapUdiscEventToDraftPreview,
   redirectTo = redirect,
 } = {}) {

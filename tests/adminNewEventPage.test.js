@@ -307,7 +307,7 @@ test("fetchUdiscPreviewAction maps validation and upstream format errors", async
 
   assert.equal(
     upstreamRedirects[0],
-    "/admin/events/new?udisc_error=UDisc+changed+their+leaderboard+format.+Please+try+again+later."
+    "/admin/events/new?udisc_error=UDisc+changed+their+leaderboard+format.+Please+verify+URL+and+try+again."
   );
 });
 
@@ -340,4 +340,11 @@ test("AdminNewEventPage source uses URL-based UDisc preview form fields", async 
   assert.match(source, /id: "udiscUrl"/);
   assert.match(source, /name: "udiscUrl"/);
   assert.match(source, /type: "url"/);
+});
+
+test("createFetchUdiscPreviewAction defaults to fetchUdiscEventFromUrl client export", async () => {
+  const source = await fs.readFile("app/admin/events/new/page.js", "utf8");
+
+  assert.match(source, /const \{ fetchUdiscEventFromUrl \} = udiscClientModule;/);
+  assert.match(source, /fetchUdiscEventAdapter = fetchUdiscEventFromUrl/);
 });
