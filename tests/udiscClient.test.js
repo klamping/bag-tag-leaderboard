@@ -220,3 +220,38 @@ test("fetchUdiscEventFromUrl throws UPSTREAM_FORMAT_CHANGED when participants ex
     (error) => error.type === "UPSTREAM_FORMAT_CHANGED"
   );
 });
+
+test("fetchUdiscEventFromUrl uses html fallback when structured payload is incomplete", async () => {
+  const result = await fetchUdiscEventFromUrl({
+    leaderboardUrl: "https://udisc.com/events/fallback-from-incomplete/leaderboard",
+    fetchImpl: async () => ({
+      ok: true,
+      text: async () =>
+        '<html><script type="application/ld+json">{"name":"Incomplete Structured","competitor":[{"name":"Structured Player","identifier":"s-1","position":1}]}</script><h1>Fallback Complete Event</h1><time datetime="2026-07-10">July 10</time><table><tr data-player-id="f-1"><td class="place">1</td><td class="name">Fallback Player</td></tr></table></html>',
+    }),
+  });
+
+  assert.deepEqual(result, {
+    name: "Fallback Complete Event",
+    date: "2026-07-10",
+    participants: [{ playerName: "Fallback Player", externalPlayerId: "f-1", finishPlace: 1 }],
+  });
+});
+
+test("fetchUdiscEventFromUrl parses assignment-wrapped JSON without trailing semicolon", async () => {
+  const result = await fetchUdiscEventFromUrl({
+    leaderboardUrl: "https://udisc.com/events/no-semicolon-event/leaderboard",
+    fetchImpl: async () => ({
+      ok: true,
+      text: async () =>
+        '<html><script>window.__NEXT_DATA__ = {"event":{"name":"No Semicolon Event","startDate":"2026-07-11","url":"https://udisc.com/events/no-semicolon-event/leaderboard","competitor":[{"name":"Semicolonless","identifier":"ns-1","position":1}]}}</script></html>',
+    }),
+  });
+
+  assert.deepEqual(result, {
+    name: "No Semicolon Event",
+    date: "2026-07-11",
+    slug: "no-semicolon-event",
+    participants: [{ playerName: "Semicolonless", externalPlayerId: "ns-1", finishPlace: 1 }],
+  });
+});
