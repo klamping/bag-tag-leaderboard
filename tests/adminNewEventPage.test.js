@@ -215,3 +215,48 @@ test("renderAdminDraftEventForm renders contract fields and field errors", async
   assert.match(html, /Date is invalid/);
   assert.match(html, /Notes are too long/);
 });
+
+test("fetchUdiscPreviewAction enforces auth and redirects with encoded preview", async () => {
+  const { createFetchUdiscPreviewAction } = await import("../app/admin/events/new/page.js");
+  const redirects = [];
+  let requireAdminCalls = 0;
+  const action = createFetchUdiscPreviewAction({
+    requireAdminAccess: () => {
+      requireAdminCalls += 1;
+    },
+    fetchUdiscEventAdapter: async () => ({ name: "Spring Showdown", startDate: "2026-04-12", participants: [] }),
+    mapUdiscEventToDraftPreviewAdapter: () => ({ ok: true, preview: { event: { name: "Spring Showdown" }, participants: [] } }),
+    redirectTo: (url) => redirects.push(url),
+    token: "token",
+  });
+
+  const formData = new FormData();
+  formData.set("udiscEventId", "evt_1");
+  await action({}, formData);
+
+  assert.equal(requireAdminCalls, 1);
+  assert.equal(redirects.length, 1);
+  assert.match(redirects[0], /udisc_preview=/);
+});
+
+test("fetchUdiscPreviewAction maps client errors to safe messages", async () => {
+  const { createFetchUdiscPreviewAction } = await import("../app/admin/events/new/page.js");
+  const redirects = [];
+  const action = createFetchUdiscPreviewAction({
+    requireAdminAccess: () => {},
+    fetchUdiscEventAdapter: async () => {
+      const error = new Error("x");
+      error.type = "NOT_FOUND";
+      throw error;
+    },
+    mapUdiscEventToDraftPreviewAdapter: () => ({ ok: true, preview: {} }),
+    redirectTo: (url) => redirects.push(url),
+    token: "token",
+  });
+
+  const formData = new FormData();
+  formData.set("udiscEventId", "evt_1");
+  await action({}, formData);
+
+  assert.equal(redirects[0], "/admin/events/new?udisc_error=UDisc+event+not+found.");
+});

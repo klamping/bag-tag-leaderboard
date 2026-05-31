@@ -5,12 +5,16 @@ import createEventDraftModule from "../../../../lib/createEventDraft.js";
 import eventDraftStore from "../../../../lib/eventDraftStore.js";
 import publicEventsQuery from "../../../../lib/publicEventsQuery.js";
 import eventsDataModule from "../../../../lib/eventsData.js";
+import udiscClientModule from "../../../../lib/udiscClient.js";
+import udiscToDraftPreviewModule from "../../../../lib/udiscToDraftPreview.js";
 
 const { requireAdmin } = adminAuth;
 const { createEventDraft } = createEventDraftModule;
 const { findEventBySlug, insertEventDraft } = eventDraftStore;
 const { getPublicEventScoreboardBySlug } = publicEventsQuery;
 const { getEventsData } = eventsDataModule;
+const { fetchUdiscEvent } = udiscClientModule;
+const { mapUdiscEventToDraftPreview } = udiscToDraftPreviewModule;
 
 async function findNonDraftEventBySlug(slug) {
   const { players, events, eventResults, eventPoints } = getEventsData();
@@ -47,6 +51,14 @@ export function renderAdminDraftEventForm({ action, fieldErrors }) {
     fieldErrors.notes ? createElement("p", { "data-field-error": "notes" }, fieldErrors.notes) : null,
     createElement("button", { type: "submit" }, "Create Draft")
   );
+}
+
+function messageForUdiscError(type) {
+  if (type === "CONFIG_ERROR") return "UDisc integration not configured.";
+  if (type === "AUTH_ERROR") return "UDisc authentication failed.";
+  if (type === "NOT_FOUND") return "UDisc event not found.";
+  if (type === "RATE_LIMITED") return "UDisc is rate limiting requests. Please try again shortly.";
+  return "UDisc is temporarily unavailable. Please try again.";
 }
 
 export function createAdminDraftEventAction({
@@ -98,9 +110,45 @@ export function createAdminDraftEventAction({
   };
 }
 
+export function createFetchUdiscPreviewAction({
+  requireAdminAccess = requireAdmin,
+  fetchUdiscEventAdapter = fetchUdiscEvent,
+  mapUdiscEventToDraftPreviewAdapter = mapUdiscEventToDraftPreview,
+  redirectTo = redirect,
+  token = process.env.UDISC_API_TOKEN,
+} = {}) {
+  return async function fetchUdiscPreviewAction(_previousState, formData) {
+    "use server";
+
+    requireAdminAccess();
+    const udiscEventId = String(formData.get("udiscEventId") || "").trim();
+
+    try {
+      const raw = await fetchUdiscEventAdapter({ eventId: udiscEventId, token });
+      const mapped = mapUdiscEventToDraftPreviewAdapter(raw);
+      if (!mapped.ok) {
+        const params = new URLSearchParams();
+        params.set("udisc_error", "mapping");
+        redirectTo(`/admin/events/new?${params.toString()}`);
+        return;
+      }
+
+      const encoded = encodeURIComponent(JSON.stringify(mapped.preview));
+      redirectTo(`/admin/events/new?udisc_preview=${encoded}`);
+      return;
+    } catch (error) {
+      const params = new URLSearchParams();
+      params.set("udisc_error", messageForUdiscError(error?.type));
+      redirectTo(`/admin/events/new?${params.toString()}`);
+      return;
+    }
+  };
+}
+
 export default function AdminNewEventPage({ searchParams = {} } = {}) {
   requireAdmin();
   const draftEventAction = createAdminDraftEventAction();
+  const fetchUdiscPreviewAction = createFetchUdiscPreviewAction();
   const wasCreated = searchParams?.created === "1";
   const fieldErrors = {
     name: searchParams?.error_name || "",
@@ -114,6 +162,14 @@ export default function AdminNewEventPage({ searchParams = {} } = {}) {
     "main",
     null,
     createElement("h1", null, "Create Event Draft"),
+    createElement(
+      "form",
+      { action: fetchUdiscPreviewAction },
+      createElement("label", { htmlFor: "udiscEventId" }, "UDisc Event ID"),
+      createElement("input", { id: "udiscEventId", name: "udiscEventId", type: "text", required: true }),
+      createElement("button", { type: "submit" }, "Fetch UDisc Preview")
+    ),
+    searchParams?.udisc_error ? createElement("p", null, searchParams.udisc_error) : null,
     wasCreated ? createElement("p", null, "Draft created.") : null,
     renderAdminDraftEventForm({ action: draftEventAction, fieldErrors })
   );
