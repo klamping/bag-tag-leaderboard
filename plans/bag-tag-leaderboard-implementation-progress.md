@@ -89,20 +89,45 @@ Source plans:
 
 ## Later Phases (Queued)
 
-- `[ ]` Phase 3: Admin Access + Event Draft Creation
+- `[x]` Phase 3: Admin Access + Event Draft Creation
 - `[ ]` Phase 4: UDisc Fetch + Draft Preview
 - `[ ]` Phase 5: Starting Tag Entry + Validation
 - `[ ]` Phase 6: Confirm Import
 - `[ ]` Phase 8: Post-Confirm Edits + Audit Trail
 - `[ ]` Phase 9: Failure and Integrity Hardening
 
+## Phase 3: Admin Access + Event Draft Creation
+
+### Task 3.1 - Add admin access guard for protected routes
+
+- Status: `[x] Completed`
+- Notes:
+  - Added server-side admin session guard for protected admin pages.
+  - Unauthenticated requests are redirected to `/admin/login`.
+
+### Task 3.2 - Implement admin login and session handling
+
+- Status: `[x] Completed`
+- Notes:
+  - Added shared-secret login action with secure cookie handling.
+  - Session token now includes per-session nonce and validation expiry checks.
+
+### Task 3.3 - Implement draft event create flow with validation
+
+- Status: `[x] Completed`
+- Notes:
+  - Added `/admin/events/new` draft creation action and field validation.
+  - Enforced slug collision checks against draft and non-draft/public event paths.
+  - Added/updated tests for auth, date validation, and slug collision behavior.
+
 ## Current Snapshot
 
-- Active branch: `phase-2b-public-events`
+- Active branch: `phase-3-admin-draft-event`
 - Phase 1 status: complete
 - Phase 2A status: complete
 - Phase 2B status: complete (public event routes + hardening + normalization)
-- Recommended next step: begin Phase 3 planning/tasks
+- Phase 3 status: complete (admin auth guard + login + draft event create flow)
+- Recommended next step: begin Phase 4 planning/tasks
 
 ## Phase 6: Public Event Views (`/events`, `/events/:slug`)
 
