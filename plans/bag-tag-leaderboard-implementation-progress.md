@@ -89,7 +89,7 @@ Source plans:
 
 ## Later Phases (Queued)
 
-- `[ ]` Phase 3: Admin Access + Event Draft Creation
+- `[x]` Phase 3: Admin Access + Event Draft Creation
 - `[ ]` Phase 4: UDisc Fetch + Draft Preview
 - `[ ]` Phase 5: Starting Tag Entry + Validation
 - `[ ]` Phase 6: Confirm Import
@@ -98,11 +98,12 @@ Source plans:
 
 ## Current Snapshot
 
-- Active branch: `phase-2b-public-events`
+- Active branch: `phase-3-admin-draft-event`
 - Phase 1 status: complete
 - Phase 2A status: complete
 - Phase 2B status: complete (public event routes + hardening + normalization)
-- Recommended next step: begin Phase 3 planning/tasks
+- Phase 3 status: complete (admin auth guard + login + draft event create flow)
+- Recommended next step: begin Phase 4 planning/tasks
 
 ## Phase 6: Public Event Views (`/events`, `/events/:slug`)
 
