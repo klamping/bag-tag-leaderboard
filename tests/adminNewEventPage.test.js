@@ -1,5 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs/promises");
 const { renderToStaticMarkup } = require("react-dom/server");
 
 test("draftEventAction enforces admin guard and forwards form payload", async () => {
@@ -219,22 +220,26 @@ test("renderAdminDraftEventForm renders contract fields and field errors", async
 test("fetchUdiscPreviewAction enforces auth and redirects with encoded preview", async () => {
   const { createFetchUdiscPreviewAction } = await import("../app/admin/events/new/page.js");
   const redirects = [];
+  const fetchCalls = [];
   let requireAdminCalls = 0;
   const action = createFetchUdiscPreviewAction({
     requireAdminAccess: () => {
       requireAdminCalls += 1;
     },
-    fetchUdiscEventAdapter: async () => ({ name: "Spring Showdown", startDate: "2026-04-12", participants: [] }),
+    fetchUdiscEventAdapter: async (payload) => {
+      fetchCalls.push(payload);
+      return { name: "Spring Showdown", startDate: "2026-04-12", participants: [] };
+    },
     mapUdiscEventToDraftPreviewAdapter: () => ({ ok: true, preview: { event: { name: "Spring Showdown" }, participants: [] } }),
     redirectTo: (url) => redirects.push(url),
-    token: "token",
   });
 
   const formData = new FormData();
-  formData.set("udiscEventId", "evt_1");
+  formData.set("udiscUrl", " https://udisc.com/events/spring-showdown ");
   await action({}, formData);
 
   assert.equal(requireAdminCalls, 1);
+  assert.deepEqual(fetchCalls, [{ leaderboardUrl: "https://udisc.com/events/spring-showdown" }]);
   assert.equal(redirects.length, 1);
   assert.match(redirects[0], /udisc_preview=/);
 });
@@ -251,12 +256,67 @@ test("fetchUdiscPreviewAction maps client errors to safe messages", async () => 
     },
     mapUdiscEventToDraftPreviewAdapter: () => ({ ok: true, preview: {} }),
     redirectTo: (url) => redirects.push(url),
-    token: "token",
   });
 
   const formData = new FormData();
-  formData.set("udiscEventId", "evt_1");
+  formData.set("udiscUrl", "https://udisc.com/events/missing");
   await action({}, formData);
 
   assert.equal(redirects[0], "/admin/events/new?udisc_error=UDisc+event+not+found.");
+});
+
+test("fetchUdiscPreviewAction maps validation and upstream format errors", async () => {
+  const { createFetchUdiscPreviewAction } = await import("../app/admin/events/new/page.js");
+
+  const validationRedirects = [];
+  const validationAction = createFetchUdiscPreviewAction({
+    requireAdminAccess: () => {},
+    fetchUdiscEventAdapter: async () => {
+      const error = new Error("invalid url");
+      error.type = "VALIDATION_ERROR";
+      throw error;
+    },
+    mapUdiscEventToDraftPreviewAdapter: () => ({ ok: true, preview: {} }),
+    redirectTo: (url) => validationRedirects.push(url),
+  });
+
+  const validationFormData = new FormData();
+  validationFormData.set("udiscUrl", "not-a-url");
+  await validationAction({}, validationFormData);
+
+  assert.equal(
+    validationRedirects[0],
+    "/admin/events/new?udisc_error=Please+enter+a+valid+UDisc+leaderboard+URL."
+  );
+
+  const upstreamRedirects = [];
+  const upstreamAction = createFetchUdiscPreviewAction({
+    requireAdminAccess: () => {},
+    fetchUdiscEventAdapter: async () => {
+      const error = new Error("format changed");
+      error.type = "UPSTREAM_FORMAT_CHANGED";
+      throw error;
+    },
+    mapUdiscEventToDraftPreviewAdapter: () => ({ ok: true, preview: {} }),
+    redirectTo: (url) => upstreamRedirects.push(url),
+  });
+
+  const upstreamFormData = new FormData();
+  upstreamFormData.set("udiscUrl", "https://udisc.com/events/spring-showdown");
+  await upstreamAction({}, upstreamFormData);
+
+  assert.equal(
+    upstreamRedirects[0],
+    "/admin/events/new?udisc_error=UDisc+changed+their+leaderboard+format.+Please+try+again+later."
+  );
+});
+
+test("AdminNewEventPage source uses URL-based UDisc preview form fields", async () => {
+  const source = await fs.readFile("app/admin/events/new/page.js", "utf8");
+
+  assert.match(source, /UDisc Leaderboard URL/);
+  assert.match(source, /htmlFor: "udiscUrl"/);
+  assert.match(source, /id: "udiscUrl"/);
+  assert.match(source, /name: "udiscUrl"/);
+  assert.match(source, /type: "url"/);
 });

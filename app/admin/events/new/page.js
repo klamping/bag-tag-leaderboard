@@ -54,10 +54,12 @@ export function renderAdminDraftEventForm({ action, fieldErrors }) {
 }
 
 function messageForUdiscError(type) {
-  if (type === "CONFIG_ERROR") return "UDisc integration not configured.";
-  if (type === "AUTH_ERROR") return "UDisc authentication failed.";
   if (type === "NOT_FOUND") return "UDisc event not found.";
   if (type === "RATE_LIMITED") return "UDisc is rate limiting requests. Please try again shortly.";
+  if (type === "VALIDATION_ERROR") return "Please enter a valid UDisc leaderboard URL.";
+  if (type === "UPSTREAM_FORMAT_CHANGED") {
+    return "UDisc changed their leaderboard format. Please try again later.";
+  }
   return "UDisc is temporarily unavailable. Please try again.";
 }
 
@@ -115,16 +117,15 @@ export function createFetchUdiscPreviewAction({
   fetchUdiscEventAdapter = fetchUdiscEvent,
   mapUdiscEventToDraftPreviewAdapter = mapUdiscEventToDraftPreview,
   redirectTo = redirect,
-  token = process.env.UDISC_API_TOKEN,
 } = {}) {
   return async function fetchUdiscPreviewAction(_previousState, formData) {
     "use server";
 
     requireAdminAccess();
-    const udiscEventId = String(formData.get("udiscEventId") || "").trim();
+    const udiscUrl = String(formData.get("udiscUrl") || "").trim();
 
     try {
-      const raw = await fetchUdiscEventAdapter({ eventId: udiscEventId, token });
+      const raw = await fetchUdiscEventAdapter({ leaderboardUrl: udiscUrl });
       const mapped = mapUdiscEventToDraftPreviewAdapter(raw);
       if (!mapped.ok) {
         const params = new URLSearchParams();
@@ -165,8 +166,8 @@ export default function AdminNewEventPage({ searchParams = {} } = {}) {
     createElement(
       "form",
       { action: fetchUdiscPreviewAction },
-      createElement("label", { htmlFor: "udiscEventId" }, "UDisc Event ID"),
-      createElement("input", { id: "udiscEventId", name: "udiscEventId", type: "text", required: true }),
+      createElement("label", { htmlFor: "udiscUrl" }, "UDisc Leaderboard URL"),
+      createElement("input", { id: "udiscUrl", name: "udiscUrl", type: "url", required: true }),
       createElement("button", { type: "submit" }, "Fetch UDisc Preview")
     ),
     searchParams?.udisc_error ? createElement("p", null, searchParams.udisc_error) : null,
