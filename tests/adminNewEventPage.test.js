@@ -61,7 +61,7 @@ test("draftEventAction default persistence path creates and dedupes drafts", asy
   });
 
   const firstFormData = new FormData();
-  firstFormData.set("slug", "spring-showdown");
+  firstFormData.set("slug", "winter-blast");
   firstFormData.set("name", "Spring Showdown");
   firstFormData.set("date", "2026-04-12");
   firstFormData.set("isMajor", "false");
@@ -133,6 +133,32 @@ test("draftEventAction prevents slug collisions from non-draft events", async ()
 
   assert.equal(result, undefined);
   assert.equal(insertCalls, 0);
+  assert.deepEqual(redirects, ["/admin/events/new?error_slug=Slug+is+already+in+use"]);
+});
+
+test("draftEventAction default path blocks slug collisions with public events", async () => {
+  const { createAdminDraftEventAction } = await import("../app/admin/events/new/page.js");
+  const eventDraftStore = await import("../lib/eventDraftStore.js");
+
+  eventDraftStore.resetEventDraftStore();
+  const redirects = [];
+  const action = createAdminDraftEventAction({
+    requireAdminAccess: () => {},
+    redirectTo: (url) => {
+      redirects.push(url);
+    },
+  });
+
+  const formData = new FormData();
+  formData.set("slug", "spring-showdown");
+  formData.set("name", "Spring Showdown");
+  formData.set("date", "2026-04-12");
+  formData.set("isMajor", "false");
+  formData.set("notes", "");
+
+  const result = await action({}, formData);
+
+  assert.equal(result, undefined);
   assert.deepEqual(redirects, ["/admin/events/new?error_slug=Slug+is+already+in+use"]);
 });
 

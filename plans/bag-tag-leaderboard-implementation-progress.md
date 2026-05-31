@@ -96,6 +96,30 @@ Source plans:
 - `[ ]` Phase 8: Post-Confirm Edits + Audit Trail
 - `[ ]` Phase 9: Failure and Integrity Hardening
 
+## Phase 3: Admin Access + Event Draft Creation
+
+### Task 3.1 - Add admin access guard for protected routes
+
+- Status: `[x] Completed`
+- Notes:
+  - Added server-side admin session guard for protected admin pages.
+  - Unauthenticated requests are redirected to `/admin/login`.
+
+### Task 3.2 - Implement admin login and session handling
+
+- Status: `[x] Completed`
+- Notes:
+  - Added shared-secret login action with secure cookie handling.
+  - Session token now includes per-session nonce and validation expiry checks.
+
+### Task 3.3 - Implement draft event create flow with validation
+
+- Status: `[x] Completed`
+- Notes:
+  - Added `/admin/events/new` draft creation action and field validation.
+  - Enforced slug collision checks against draft and non-draft/public event paths.
+  - Added/updated tests for auth, date validation, and slug collision behavior.
+
 ## Current Snapshot
 
 - Active branch: `phase-3-admin-draft-event`

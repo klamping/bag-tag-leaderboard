@@ -3,13 +3,25 @@ import { redirect } from "next/navigation.js";
 import adminAuth from "../../../../lib/adminAuth.js";
 import createEventDraftModule from "../../../../lib/createEventDraft.js";
 import eventDraftStore from "../../../../lib/eventDraftStore.js";
+import publicEventsQuery from "../../../../lib/publicEventsQuery.js";
+import eventsDataModule from "../../../../lib/eventsData.js";
 
 const { requireAdmin } = adminAuth;
 const { createEventDraft } = createEventDraftModule;
 const { findEventBySlug, insertEventDraft } = eventDraftStore;
+const { getPublicEventScoreboardBySlug } = publicEventsQuery;
+const { getEventsData } = eventsDataModule;
 
-async function findNonDraftEventBySlug() {
-  return null;
+async function findNonDraftEventBySlug(slug) {
+  const { players, events, eventResults, eventPoints } = getEventsData();
+
+  return getPublicEventScoreboardBySlug({
+    slug,
+    players,
+    events,
+    eventResults,
+    eventPoints,
+  });
 }
 
 export function renderAdminDraftEventForm({ action, fieldErrors }) {

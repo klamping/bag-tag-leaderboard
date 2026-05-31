@@ -2,17 +2,21 @@ import { createElement } from "react";
 import { notFound } from "next/navigation.js";
 import publicEventsQuery from "../../../lib/publicEventsQuery.js";
 import demoLeaderboard from "../../../lib/demoLeaderboard.js";
+import eventsDataModule from "../../../lib/eventsData.js";
 
 const { getPublicEventScoreboardBySlug } = publicEventsQuery;
 const { scoreDemoSeason, DEMO_PLAYERS } = demoLeaderboard;
+const { getEventsData } = eventsDataModule;
 
 function loadEventScoreboard({ slug }) {
+  const { players, events, eventResults, eventPoints } = getEventsData();
+
   return getPublicEventScoreboardBySlug({
     slug,
-    players: [],
-    events: [],
-    eventResults: [],
-    eventPoints: [],
+    players,
+    events,
+    eventResults,
+    eventPoints,
   });
 }
 

@@ -1,12 +1,15 @@
 import { createElement } from "react";
 import publicEventsQuery from "../../lib/publicEventsQuery.js";
 import demoLeaderboard from "../../lib/demoLeaderboard.js";
+import eventsDataModule from "../../lib/eventsData.js";
 
 const { listPublicEvents } = publicEventsQuery;
 const { scoreDemoSeason } = demoLeaderboard;
+const { getEventsData } = eventsDataModule;
 
 function loadPublicEvents() {
-  return listPublicEvents({ events: [] });
+  const { events } = getEventsData();
+  return listPublicEvents({ events });
 }
 
 function loadDemoEvents() {
