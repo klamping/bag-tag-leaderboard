@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const {
   ADMIN_SESSION_COOKIE,
   createAdminSessionToken,
+  getAdminCookieOptions,
   isAdminSessionTokenValid,
   verifyAdminSecret,
 } = require("../lib/adminAuth");
@@ -78,4 +79,20 @@ test("isAdminSessionTokenValid checks admin token", () => {
 
 test("exports stable admin session cookie name", () => {
   assert.equal(ADMIN_SESSION_COOKIE, "admin_session");
+});
+
+test("getAdminCookieOptions sets secure flag by environment", () => {
+  assert.deepEqual(getAdminCookieOptions("development"), {
+    httpOnly: true,
+    path: "/",
+    sameSite: "lax",
+    secure: false,
+  });
+
+  assert.deepEqual(getAdminCookieOptions("production"), {
+    httpOnly: true,
+    path: "/",
+    sameSite: "lax",
+    secure: true,
+  });
 });
