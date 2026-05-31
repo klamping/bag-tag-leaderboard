@@ -60,6 +60,9 @@ function messageForUdiscError(type) {
   if (type === "UPSTREAM_FORMAT_CHANGED") {
     return "UDisc changed their leaderboard format. Please try again later.";
   }
+  if (type === "MAPPING_ERROR") {
+    return "UDisc leaderboard data could not be processed. Please try again later.";
+  }
   return "UDisc is temporarily unavailable. Please try again.";
 }
 
@@ -129,7 +132,7 @@ export function createFetchUdiscPreviewAction({
       const mapped = mapUdiscEventToDraftPreviewAdapter(raw);
       if (!mapped.ok) {
         const params = new URLSearchParams();
-        params.set("udisc_error", "mapping");
+        params.set("udisc_error", messageForUdiscError("MAPPING_ERROR"));
         redirectTo(`/admin/events/new?${params.toString()}`);
         return;
       }

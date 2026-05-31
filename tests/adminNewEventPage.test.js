@@ -163,7 +163,7 @@ test("draftEventAction default path blocks slug collisions with public events", 
   assert.deepEqual(redirects, ["/admin/events/new?error_slug=Slug+is+already+in+use"]);
 });
 
-test("draftEventAction returns fieldErrors without redirect", async () => {
+test("draftEventAction redirects with fieldErrors in query params", async () => {
   const { createAdminDraftEventAction } = await import("../app/admin/events/new/page.js");
 
   const redirects = [];
@@ -308,6 +308,27 @@ test("fetchUdiscPreviewAction maps validation and upstream format errors", async
   assert.equal(
     upstreamRedirects[0],
     "/admin/events/new?udisc_error=UDisc+changed+their+leaderboard+format.+Please+try+again+later."
+  );
+});
+
+test("fetchUdiscPreviewAction maps preview transformation failures to safe messages", async () => {
+  const { createFetchUdiscPreviewAction } = await import("../app/admin/events/new/page.js");
+  const redirects = [];
+
+  const action = createFetchUdiscPreviewAction({
+    requireAdminAccess: () => {},
+    fetchUdiscEventAdapter: async () => ({ name: "Spring Showdown", startDate: "2026-04-12", participants: [] }),
+    mapUdiscEventToDraftPreviewAdapter: () => ({ ok: false }),
+    redirectTo: (url) => redirects.push(url),
+  });
+
+  const formData = new FormData();
+  formData.set("udiscUrl", "https://udisc.com/events/spring-showdown");
+  await action({}, formData);
+
+  assert.equal(
+    redirects[0],
+    "/admin/events/new?udisc_error=UDisc+leaderboard+data+could+not+be+processed.+Please+try+again+later."
   );
 });
 
