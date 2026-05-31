@@ -14,6 +14,22 @@ test("mapUdiscEventToDraftPreview normalizes valid payload", () => {
   assert.equal(result.preview.event.date, "2026-04-12");
 });
 
+test("mapUdiscEventToDraftPreview accepts scraper-normalized payload keys", () => {
+  const result = mapUdiscEventToDraftPreview({
+    name: "Summer Classic",
+    date: "2026-08-15",
+    slug: "summer-classic",
+    participants: [{ playerName: "Bea", externalPlayerId: "p9", finishPlace: 3 }],
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.preview.event.slug, "summer-classic");
+  assert.equal(result.preview.event.date, "2026-08-15");
+  assert.deepEqual(result.preview.participants, [
+    { playerName: "Bea", externalPlayerId: "p9", finishPlace: 3 },
+  ]);
+});
+
 test("mapUdiscEventToDraftPreview returns deterministic field errors", () => {
   const result = mapUdiscEventToDraftPreview({ participants: [{ id: "p1", place: 0 }] });
   assert.equal(result.ok, false);
