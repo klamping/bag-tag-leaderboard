@@ -7,7 +7,9 @@ function buildValidInput(overrides = {}) {
   return {
     slug: "spring-showdown",
     name: "Spring Showdown",
-    eventDate: "2026-04-12",
+    date: "2026-04-12",
+    isMajor: false,
+    notes: "",
     ...overrides,
   };
 }
@@ -67,7 +69,9 @@ test("creates draft with normalized shape and status draft", async () => {
     input: buildValidInput({
       slug: "  SPRING-SHOWDOWN  ",
       name: "  Spring Showdown  ",
-      eventDate: " 2026-04-12 ",
+      date: " 2026-04-12 ",
+      isMajor: "true",
+      notes: "  Bring towels  ",
     }),
     findEventBySlug: async () => null,
     insertEventDraft: async (payload) => {
@@ -79,7 +83,9 @@ test("creates draft with normalized shape and status draft", async () => {
   assert.deepEqual(insertedPayload, {
     slug: "spring-showdown",
     name: "Spring Showdown",
-    eventDate: "2026-04-12",
+    date: "2026-04-12",
+    isMajor: true,
+    notes: "Bring towels",
     status: "draft",
   });
 
@@ -87,8 +93,26 @@ test("creates draft with normalized shape and status draft", async () => {
     id: "evt_123",
     slug: "spring-showdown",
     name: "Spring Showdown",
-    eventDate: "2026-04-12",
+    date: "2026-04-12",
+    isMajor: true,
+    notes: "Bring towels",
     status: "draft",
+  });
+});
+
+test("returns field error for invalid date", async () => {
+  const result = await createEventDraft({
+    input: buildValidInput({ date: "not-a-date" }),
+    findEventBySlug: async () => null,
+    insertEventDraft: async () => {
+      throw new Error("should not insert");
+    },
+  });
+
+  assert.deepEqual(result, {
+    fieldErrors: {
+      date: "Date is invalid",
+    },
   });
 });
 

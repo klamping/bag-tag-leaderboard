@@ -1,5 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const { renderToStaticMarkup } = require("react-dom/server");
 
 test("draftEventAction enforces admin guard and forwards form payload", async () => {
   const { createAdminDraftEventAction } = await import("../app/admin/events/new/page.js");
@@ -13,14 +14,21 @@ test("draftEventAction enforces admin guard and forwards form payload", async ()
     },
     createDraft: async (payload) => {
       createDraftCalls.push(payload);
-      return { id: "evt_789", status: "draft" };
+      return {
+        fieldErrors: {
+          name: "Name is required",
+        },
+      };
     },
+    redirectTo: () => {},
   });
 
   const formData = new FormData();
   formData.set("slug", "  SPRING-SHOWDOWN ");
   formData.set("name", " Spring Showdown ");
-  formData.set("eventDate", "2026-04-12");
+  formData.set("date", "2026-04-12");
+  formData.set("isMajor", "true");
+  formData.set("notes", " Bring towels ");
 
   const result = await action({}, formData);
 
@@ -29,11 +37,13 @@ test("draftEventAction enforces admin guard and forwards form payload", async ()
   assert.deepEqual(createDraftCalls[0].input, {
     slug: "  SPRING-SHOWDOWN ",
     name: " Spring Showdown ",
-    eventDate: "2026-04-12",
+    date: "2026-04-12",
+    isMajor: "true",
+    notes: " Bring towels ",
   });
   assert.equal(typeof createDraftCalls[0].findEventBySlug, "function");
   assert.equal(typeof createDraftCalls[0].insertEventDraft, "function");
-  assert.deepEqual(result, { id: "evt_789", status: "draft" });
+  assert.equal(result, undefined);
 });
 
 test("draftEventAction default persistence path creates and dedupes drafts", async () => {
@@ -41,25 +51,108 @@ test("draftEventAction default persistence path creates and dedupes drafts", asy
   const eventDraftStore = await import("../lib/eventDraftStore.js");
 
   eventDraftStore.resetEventDraftStore();
+  const redirects = [];
 
   const action = createAdminDraftEventAction({
     requireAdminAccess: () => {},
+    redirectTo: (url) => {
+      redirects.push(url);
+    },
   });
 
   const firstFormData = new FormData();
   firstFormData.set("slug", "spring-showdown");
   firstFormData.set("name", "Spring Showdown");
-  firstFormData.set("eventDate", "2026-04-12");
+  firstFormData.set("date", "2026-04-12");
+  firstFormData.set("isMajor", "false");
+  firstFormData.set("notes", "Bring water");
 
   const created = await action({}, firstFormData);
-  assert.equal(created.slug, "spring-showdown");
-  assert.equal(created.status, "draft");
-  assert.ok(created.id);
+  assert.equal(created, undefined);
 
   const duplicate = await action({}, firstFormData);
-  assert.deepEqual(duplicate, {
-    fieldErrors: {
-      slug: "Slug is already in use",
+  assert.deepEqual(duplicate, undefined);
+  assert.deepEqual(redirects, [
+    "/admin/events/new?created=1",
+    "/admin/events/new?error_slug=Slug+is+already+in+use",
+  ]);
+});
+
+test("draftEventAction redirects to created flag on successful create", async () => {
+  const { createAdminDraftEventAction } = await import("../app/admin/events/new/page.js");
+
+  const redirects = [];
+  const action = createAdminDraftEventAction({
+    requireAdminAccess: () => {},
+    createDraft: async () => ({ id: "evt_123", status: "draft" }),
+    redirectTo: (url) => {
+      redirects.push(url);
     },
   });
+
+  const formData = new FormData();
+  formData.set("slug", "spring-showdown");
+  formData.set("name", "Spring Showdown");
+  formData.set("date", "2026-04-12");
+  formData.set("isMajor", "false");
+  formData.set("notes", "");
+
+  const result = await action({}, formData);
+
+  assert.deepEqual(redirects, ["/admin/events/new?created=1"]);
+  assert.equal(result, undefined);
+});
+
+test("draftEventAction returns fieldErrors without redirect", async () => {
+  const { createAdminDraftEventAction } = await import("../app/admin/events/new/page.js");
+
+  const redirects = [];
+  const action = createAdminDraftEventAction({
+    requireAdminAccess: () => {},
+    createDraft: async () => ({
+      fieldErrors: {
+        date: "Date is invalid",
+      },
+    }),
+    redirectTo: (url) => {
+      redirects.push(url);
+    },
+  });
+
+  const formData = new FormData();
+  formData.set("slug", "spring-showdown");
+  formData.set("name", "Spring Showdown");
+  formData.set("date", "not-a-date");
+  formData.set("isMajor", "false");
+  formData.set("notes", "");
+
+  const result = await action({}, formData);
+
+  assert.deepEqual(redirects, ["/admin/events/new?error_date=Date+is+invalid"]);
+  assert.equal(result, undefined);
+});
+
+test("renderAdminDraftEventForm renders contract fields and field errors", async () => {
+  const module = await import("../app/admin/events/new/page.js");
+  const html = renderToStaticMarkup(
+    module.renderAdminDraftEventForm({
+      action: async () => {},
+      fieldErrors: {
+        name: "Name is required",
+        slug: "Slug is required",
+        date: "Date is invalid",
+        notes: "Notes are too long",
+      },
+    })
+  );
+
+  assert.match(html, /name="name"/);
+  assert.match(html, /name="slug"/);
+  assert.match(html, /name="date"/);
+  assert.match(html, /name="isMajor"/);
+  assert.match(html, /name="notes"/);
+  assert.match(html, /Name is required/);
+  assert.match(html, /Slug is required/);
+  assert.match(html, /Date is invalid/);
+  assert.match(html, /Notes are too long/);
 });
