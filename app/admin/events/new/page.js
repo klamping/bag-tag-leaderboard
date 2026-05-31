@@ -1,17 +1,17 @@
 import { createElement } from "react";
 import adminAuth from "../../../../lib/adminAuth.js";
 import createEventDraftModule from "../../../../lib/createEventDraft.js";
+import eventDraftStore from "../../../../lib/eventDraftStore.js";
 
 const { requireAdmin } = adminAuth;
 const { createEventDraft } = createEventDraftModule;
+const { findEventBySlug, insertEventDraft } = eventDraftStore;
 
 export function createAdminDraftEventAction({
   requireAdminAccess = requireAdmin,
   createDraft = createEventDraft,
-  findEventBySlug = async () => null,
-  insertEventDraft = async () => {
-    throw new Error("Draft persistence not implemented");
-  },
+  findEventBySlugAdapter = findEventBySlug,
+  insertEventDraftAdapter = insertEventDraft,
 } = {}) {
   return async function draftEventAction(_previousState, formData) {
     "use server";
@@ -26,8 +26,8 @@ export function createAdminDraftEventAction({
 
     return createDraft({
       input,
-      findEventBySlug,
-      insertEventDraft,
+      findEventBySlug: findEventBySlugAdapter,
+      insertEventDraft: insertEventDraftAdapter,
     });
   };
 }
