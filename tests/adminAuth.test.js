@@ -42,23 +42,30 @@ test("createAdminSessionToken throws when ADMIN_SHARED_SECRET is not set", () =>
   assert.throws(() => createAdminSessionToken(), /ADMIN_SHARED_SECRET must be set/);
 });
 
-test("createAdminSessionToken is deterministic for a shared secret", () => {
+test("createAdminSessionToken creates distinct signed tokens", () => {
   process.env.ADMIN_SHARED_SECRET = "top-secret";
 
-  assert.equal(
-    createAdminSessionToken(),
-    "2dbeab3e81b998c4a17dbc7446e2ff97d3c8d5c98da06d60f8b08d9760dbbc32"
-  );
-  assert.equal(createAdminSessionToken(), createAdminSessionToken());
+  const firstToken = createAdminSessionToken();
+  const secondToken = createAdminSessionToken();
+
+  assert.notEqual(firstToken, secondToken);
+  assert.equal(isAdminSessionTokenValid(firstToken), true);
+  assert.equal(isAdminSessionTokenValid(secondToken), true);
 });
 
-test("isAdminSessionTokenValid throws when ADMIN_SHARED_SECRET is not set", () => {
+test("isAdminSessionTokenValid fails closed without secret for malformed token", () => {
   delete process.env.ADMIN_SHARED_SECRET;
 
-  assert.throws(
-    () => isAdminSessionTokenValid("anything"),
-    /ADMIN_SHARED_SECRET must be set/
-  );
+  assert.equal(isAdminSessionTokenValid("anything"), false);
+});
+
+test("isAdminSessionTokenValid throws for signed token when secret is unset", () => {
+  process.env.ADMIN_SHARED_SECRET = "top-secret";
+  const signedToken = createAdminSessionToken();
+
+  delete process.env.ADMIN_SHARED_SECRET;
+
+  assert.throws(() => isAdminSessionTokenValid(signedToken), /ADMIN_SHARED_SECRET must be set/);
 });
 
 test("isAdminSessionTokenValid checks admin token", () => {
@@ -67,14 +74,25 @@ test("isAdminSessionTokenValid checks admin token", () => {
   const validToken = createAdminSessionToken();
 
   assert.equal(isAdminSessionTokenValid(validToken), true);
-  assert.equal(
-    isAdminSessionTokenValid(
-      "2dbeab3e81b998c4a17dbc7446e2ff97d3c8d5c98da06d60f8b08d9760dbbc31"
-    ),
-    false
-  );
+  assert.equal(isAdminSessionTokenValid("invalid"), false);
   assert.equal(isAdminSessionTokenValid(""), false);
   assert.equal(isAdminSessionTokenValid(null), false);
+});
+
+test("isAdminSessionTokenValid rejects expired tokens", () => {
+  process.env.ADMIN_SHARED_SECRET = "top-secret";
+
+  const validToken = createAdminSessionToken({
+    now: () => new Date("2026-05-10T12:00:00.000Z"),
+  });
+
+  assert.equal(
+    isAdminSessionTokenValid(validToken, {
+      now: () => new Date("2026-05-10T12:45:00.000Z"),
+      maxAgeSeconds: 1800,
+    }),
+    false
+  );
 });
 
 test("exports stable admin session cookie name", () => {
@@ -84,6 +102,7 @@ test("exports stable admin session cookie name", () => {
 test("getAdminCookieOptions sets secure flag by environment", () => {
   assert.deepEqual(getAdminCookieOptions("development"), {
     httpOnly: true,
+    maxAge: 1800,
     path: "/",
     sameSite: "lax",
     secure: false,
@@ -91,6 +110,7 @@ test("getAdminCookieOptions sets secure flag by environment", () => {
 
   assert.deepEqual(getAdminCookieOptions("production"), {
     httpOnly: true,
+    maxAge: 1800,
     path: "/",
     sameSite: "lax",
     secure: true,

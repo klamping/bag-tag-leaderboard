@@ -116,6 +116,22 @@ test("returns field error for invalid date", async () => {
   });
 });
 
+test("returns field error for impossible calendar date", async () => {
+  const result = await createEventDraft({
+    input: buildValidInput({ date: "2026-02-31" }),
+    findEventBySlug: async () => null,
+    insertEventDraft: async () => {
+      throw new Error("should not insert");
+    },
+  });
+
+  assert.deepEqual(result, {
+    fieldErrors: {
+      date: "Date is invalid",
+    },
+  });
+});
+
 test("returns fieldErrors and never writes on validation failure", async () => {
   let lookupCalls = 0;
   let insertCalls = 0;

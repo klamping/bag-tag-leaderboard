@@ -103,6 +103,39 @@ test("draftEventAction redirects to created flag on successful create", async ()
   assert.equal(result, undefined);
 });
 
+test("draftEventAction prevents slug collisions from non-draft events", async () => {
+  const { createAdminDraftEventAction } = await import("../app/admin/events/new/page.js");
+
+  const redirects = [];
+  let insertCalls = 0;
+  const action = createAdminDraftEventAction({
+    requireAdminAccess: () => {},
+    findEventBySlugAdapter: async () => null,
+    findNonDraftEventBySlugAdapter: async (slug) =>
+      slug === "spring-showdown" ? { id: "evt_confirmed_1", slug } : null,
+    insertEventDraftAdapter: async () => {
+      insertCalls += 1;
+      return { id: "evt_draft_1" };
+    },
+    redirectTo: (url) => {
+      redirects.push(url);
+    },
+  });
+
+  const formData = new FormData();
+  formData.set("slug", "spring-showdown");
+  formData.set("name", "Spring Showdown");
+  formData.set("date", "2026-04-12");
+  formData.set("isMajor", "false");
+  formData.set("notes", "");
+
+  const result = await action({}, formData);
+
+  assert.equal(result, undefined);
+  assert.equal(insertCalls, 0);
+  assert.deepEqual(redirects, ["/admin/events/new?error_slug=Slug+is+already+in+use"]);
+});
+
 test("draftEventAction returns fieldErrors without redirect", async () => {
   const { createAdminDraftEventAction } = await import("../app/admin/events/new/page.js");
 

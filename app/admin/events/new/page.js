@@ -8,6 +8,10 @@ const { requireAdmin } = adminAuth;
 const { createEventDraft } = createEventDraftModule;
 const { findEventBySlug, insertEventDraft } = eventDraftStore;
 
+async function findNonDraftEventBySlug() {
+  return null;
+}
+
 export function renderAdminDraftEventForm({ action, fieldErrors }) {
   return createElement(
     "form",
@@ -37,6 +41,7 @@ export function createAdminDraftEventAction({
   requireAdminAccess = requireAdmin,
   createDraft = createEventDraft,
   findEventBySlugAdapter = findEventBySlug,
+  findNonDraftEventBySlugAdapter = findNonDraftEventBySlug,
   insertEventDraftAdapter = insertEventDraft,
   redirectTo = redirect,
 } = {}) {
@@ -55,7 +60,14 @@ export function createAdminDraftEventAction({
 
     const result = await createDraft({
       input,
-      findEventBySlug: findEventBySlugAdapter,
+      findEventBySlug: async (slug) => {
+        const [draftMatch, nonDraftMatch] = await Promise.all([
+          findEventBySlugAdapter(slug),
+          findNonDraftEventBySlugAdapter(slug),
+        ]);
+
+        return draftMatch || nonDraftMatch;
+      },
       insertEventDraft: insertEventDraftAdapter,
     });
 

@@ -43,7 +43,7 @@ test("loginAction sets session cookie and redirects on valid shared secret", asy
       redirectedTo = path;
     },
     createSessionToken: () => "signed-token",
-    getCookieOptions: (env) => ({ secure: env === "production", httpOnly: true }),
+    getCookieOptions: (env) => ({ secure: env === "production", httpOnly: true, maxAge: 1800 }),
     verifySecret: (candidate) => candidate === "top-secret",
     nodeEnv: "production",
   });
@@ -54,7 +54,7 @@ test("loginAction sets session cookie and redirects on valid shared secret", asy
   await loginAction({}, formData);
 
   assert.deepEqual(cookieCalls, [
-    ["admin_session", "signed-token", { secure: true, httpOnly: true }],
+    ["admin_session", "signed-token", { secure: true, httpOnly: true, maxAge: 1800 }],
   ]);
   assert.equal(redirectedTo, "/admin/events/new");
 });
