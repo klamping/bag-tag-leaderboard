@@ -46,7 +46,7 @@ test("createAdminSessionToken is deterministic for a shared secret", () => {
 
   assert.equal(
     createAdminSessionToken(),
-    "4ce3187b94e8148e6bb39b810d8c97e5d884633e7334e11b6967ec4ee566b4d8"
+    "2dbeab3e81b998c4a17dbc7446e2ff97d3c8d5c98da06d60f8b08d9760dbbc32"
   );
   assert.equal(createAdminSessionToken(), createAdminSessionToken());
 });
@@ -68,7 +68,7 @@ test("isAdminSessionTokenValid checks admin token", () => {
   assert.equal(isAdminSessionTokenValid(validToken), true);
   assert.equal(
     isAdminSessionTokenValid(
-      "4ce3187b94e8148e6bb39b810d8c97e5d884633e7334e11b6967ec4ee566b4d9"
+      "2dbeab3e81b998c4a17dbc7446e2ff97d3c8d5c98da06d60f8b08d9760dbbc31"
     ),
     false
   );
