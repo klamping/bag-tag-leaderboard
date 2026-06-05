@@ -181,6 +181,26 @@ test("fetchUdiscEventFromUrl falls back to html extraction when structured data 
   });
 });
 
+test("fetchUdiscEventFromUrl falls back to generic leaderboard table rows without place/name classes", async () => {
+  const result = await fetchUdiscEventFromUrl({
+    leaderboardUrl: "https://udisc.com/events/live-shape/leaderboard?round=1&view=scores",
+    fetchImpl: async () => ({
+      ok: true,
+      text: async () =>
+        '<html><head><title>League Leaderboard | 2026 Rochester MN Bag Tag - Bag Tag #2 | UDisc Events</title></head><body><h1>Bag Tag #2</h1><time datetime="2026-05-17">May 17</time><table><tr><th>Place</th><th>Name</th><th>Total</th></tr><tr class="max-h-[2rem]"><td class="text-center"><div class="flex flex-col"><div class="text-xs">1</div></div></td><td class="text-left"><div><p class="text-wrap text-start">Jacob Boerner</p></div></td><td>-6</td></tr><tr class="max-h-[2rem]" data-player-id="player-2"><td class="text-center"><div class="text-xs">2</div></td><td class="text-left"><button><span>Jared Pittman</span></button></td><td>-3</td></tr></table></body></html>',
+    }),
+  });
+
+  assert.deepEqual(result, {
+    name: "Bag Tag #2",
+    date: "2026-05-17",
+    participants: [
+      { playerName: "Jacob Boerner", finishPlace: 1 },
+      { playerName: "Jared Pittman", externalPlayerId: "player-2", finishPlace: 2 },
+    ],
+  });
+});
+
 test("fetchUdiscEventFromUrl throws UPSTREAM_FORMAT_CHANGED for unparseable success page", async () => {
   await assert.rejects(
     fetchUdiscEventFromUrl({
