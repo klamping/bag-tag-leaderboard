@@ -18,3 +18,7 @@ yarn-error.log*
 
 # local worktrees
 .worktrees/
+
+# Playwright artifacts
+playwright-report/
+test-results/

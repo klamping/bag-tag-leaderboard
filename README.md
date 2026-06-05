@@ -39,6 +39,30 @@ Run the test suite:
 npm test
 ```
 
+## Playwright
+
+Playwright is scaffolded for future end-to-end browser coverage and runs separately from the default Node test suite.
+
+Install the browser binary:
+
+```bash
+npx playwright install chromium
+```
+
+Run the Playwright commands:
+
+```bash
+npm run test:e2e
+npm run test:e2e:headed
+npm run test:e2e:ui
+```
+
+Notes:
+
+- Playwright runs against a production-style local server using `next build` and `next start`.
+- The repository currently ships with no Playwright specs in `e2e/`, so `npm run test:e2e` is configured to pass cleanly until browser tests are added.
+- `npm test` still runs the existing `node:test` suite.
+
 ## Admin Login
 
 1. Open `http://localhost:3000/admin/login`.
