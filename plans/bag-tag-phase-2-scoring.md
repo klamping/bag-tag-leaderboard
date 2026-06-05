@@ -55,7 +55,7 @@ Implement placement scoring with tie-aware logic: fixed points for 1st-4th, then
 - [x] Placement points for 1st-4th are applied exactly.
 - [x] Top-50% and top-75% cutoffs use `ceil(fieldSize * threshold)`.
 - [x] Tied players at cutoff are included in the same placement tier.
-- [x] Competition ranking semantics are used for finish-rank dependent calculations.
+- [x] Competition ranking semantics are usedfor finish-rank dependent calculations.
 
 ---
 
