@@ -90,11 +90,11 @@ Source plans:
 ## Later Phases (Queued)
 
 - `[x]` Phase 3: Admin Access + Event Draft Creation
-- `[ ]` Phase 4: UDisc Fetch + Draft Preview
-- `[ ]` Phase 5: Starting Tag Entry + Validation
+- `[x]` Phase 4: UDisc Fetch + Draft Preview
+- `[x]` Phase 5: Starting Tag Entry + Validation
 - `[x]` Phase 6: Confirm Import
-- `[ ]` Phase 8: Post-Confirm Edits + Audit Trail
-- `[ ]` Phase 9: Failure and Integrity Hardening
+- `[ ]` Phase 7: Post-Confirm Edits + Audit Trail
+- `[ ]` Phase 8: Failure and Integrity Hardening
 
 ## Phase 3: Admin Access + Event Draft Creation
 
