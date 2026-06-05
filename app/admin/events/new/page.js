@@ -5,6 +5,7 @@ import createEventDraftModule from "../../../../lib/createEventDraft.js";
 import eventDraftStore from "../../../../lib/eventDraftStore.js";
 import publicEventsQuery from "../../../../lib/publicEventsQuery.js";
 import eventsDataModule from "../../../../lib/eventsData.js";
+import reviewUdiscDraftPreviewModule from "../../../../lib/reviewUdiscDraftPreview.js";
 import udiscClientModule from "../../../../lib/udiscClient.js";
 import udiscToDraftPreviewModule from "../../../../lib/udiscToDraftPreview.js";
 
@@ -13,8 +14,13 @@ const { createEventDraft } = createEventDraftModule;
 const { findEventBySlug, insertEventDraft } = eventDraftStore;
 const { getPublicEventScoreboardBySlug } = publicEventsQuery;
 const { getEventsData } = eventsDataModule;
+const { reviewUdiscDraftPreview } = reviewUdiscDraftPreviewModule;
 const { fetchUdiscEventFromUrl } = udiscClientModule;
 const { mapUdiscEventToDraftPreview } = udiscToDraftPreviewModule;
+
+function getKnownPlayers() {
+  return getEventsData().players;
+}
 
 async function findNonDraftEventBySlug(slug) {
   const { players, events, eventResults, eventPoints } = getEventsData();
@@ -64,6 +70,60 @@ function messageForUdiscError(type) {
     return "UDisc leaderboard data could not be processed. Please try again later.";
   }
   return "UDisc is temporarily unavailable. Please try again.";
+}
+
+function parseJsonObject(value) {
+  try {
+    const parsed = JSON.parse(String(value || ""));
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function parsePreviewPayload(value) {
+  const parsed = parseJsonObject(value);
+  if (!parsed || !parsed.event || !Array.isArray(parsed.participants)) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function parseReviewErrors(value) {
+  return parseJsonObject(value) || {};
+}
+
+function buildPreviewRedirectUrl({ preview, previewValid = false, reviewErrors = null, udiscError = "" } = {}) {
+  const params = new URLSearchParams();
+
+  if (preview) {
+    params.set("udisc_preview", JSON.stringify(preview));
+  }
+
+  if (previewValid) {
+    params.set("preview_valid", "1");
+  }
+
+  if (reviewErrors && Object.keys(reviewErrors).length > 0) {
+    params.set("review_errors", JSON.stringify(reviewErrors));
+  }
+
+  if (udiscError) {
+    params.set("udisc_error", udiscError);
+  }
+
+  return `/admin/events/new?${params.toString()}`;
+}
+
+function collectStartingTagsByIndex(formData, participantCount) {
+  const startingTagsByIndex = {};
+
+  for (let index = 0; index < participantCount; index += 1) {
+    startingTagsByIndex[index] = formData.get(`participants_${index}_startingTag`);
+  }
+
+  return startingTagsByIndex;
 }
 
 export function createAdminDraftEventAction({
@@ -119,6 +179,7 @@ export function createFetchUdiscPreviewAction({
   requireAdminAccess = requireAdmin,
   fetchUdiscEventAdapter = fetchUdiscEventFromUrl,
   mapUdiscEventToDraftPreviewAdapter = mapUdiscEventToDraftPreview,
+  getKnownPlayers: getKnownPlayersAdapter = getKnownPlayers,
   redirectTo = redirect,
 } = {}) {
   return async function fetchUdiscPreviewAction(_previousState, formData) {
@@ -131,29 +192,146 @@ export function createFetchUdiscPreviewAction({
       const raw = await fetchUdiscEventAdapter({ leaderboardUrl: udiscUrl });
       const mapped = mapUdiscEventToDraftPreviewAdapter(raw);
       if (!mapped.ok) {
-        const params = new URLSearchParams();
-        params.set("udisc_error", messageForUdiscError("MAPPING_ERROR"));
-        redirectTo(`/admin/events/new?${params.toString()}`);
+        redirectTo(
+          buildPreviewRedirectUrl({
+            udiscError: messageForUdiscError("MAPPING_ERROR"),
+          })
+        );
         return;
       }
 
-      const encoded = encodeURIComponent(JSON.stringify(mapped.preview));
-      redirectTo(`/admin/events/new?udisc_preview=${encoded}`);
+      redirectTo(
+        buildPreviewRedirectUrl({
+          preview: reviewUdiscDraftPreview({
+            preview: mapped.preview,
+            knownPlayers: getKnownPlayersAdapter(),
+            validateStartingTags: false,
+          }).preview,
+        })
+      );
       return;
     } catch (error) {
-      const params = new URLSearchParams();
-      params.set("udisc_error", messageForUdiscError(error?.type));
-      redirectTo(`/admin/events/new?${params.toString()}`);
+      redirectTo(
+        buildPreviewRedirectUrl({
+          udiscError: messageForUdiscError(error?.type),
+        })
+      );
       return;
     }
   };
+}
+
+export function createReviewUdiscPreviewAction({
+  requireAdminAccess = requireAdmin,
+  getKnownPlayers: getKnownPlayersAdapter = getKnownPlayers,
+  redirectTo = redirect,
+} = {}) {
+  return async function reviewUdiscPreviewAction(_previousState, formData) {
+    "use server";
+
+    requireAdminAccess();
+
+    const preview = parsePreviewPayload(formData.get("previewPayload"));
+    if (!preview) {
+      redirectTo(
+        buildPreviewRedirectUrl({
+          udiscError: messageForUdiscError("MAPPING_ERROR"),
+        })
+      );
+      return;
+    }
+
+    const result = reviewUdiscDraftPreview({
+      preview,
+      knownPlayers: getKnownPlayersAdapter(),
+      startingTagsByIndex: collectStartingTagsByIndex(formData, preview.participants.length),
+    });
+
+    redirectTo(
+      buildPreviewRedirectUrl({
+        preview: result.preview,
+        previewValid: result.ok,
+        reviewErrors: result.ok ? null : result.fieldErrors,
+      })
+    );
+  };
+}
+
+export function renderUdiscPreviewSection({ preview, reviewErrors = {}, action } = {}) {
+  if (!preview) return null;
+
+  const participantRows = (Array.isArray(preview.participants) ? preview.participants : []).map(
+    (participant, index) => {
+      const startingTagField = `participants_${index}_startingTag`;
+      const matchStatusField = `participants_${index}_matchStatus`;
+
+      return createElement(
+        "div",
+        { key: `${participant.externalPlayerId || participant.playerName || index}` },
+        createElement("p", null, participant.playerName),
+        createElement("p", null, `Finish place: ${participant.finishPlace}`),
+        participant.matchStatus === "matched"
+          ? createElement("p", null, `Matched player: ${participant.matchedPlayerName}`)
+          : null,
+        participant.matchStatus === "unmatched" ? createElement("p", null, "New player") : null,
+        participant.matchStatus === "matched"
+          ? createElement(
+              "div",
+              null,
+              createElement("label", { htmlFor: startingTagField }, "Starting Tag"),
+              createElement("input", {
+                id: startingTagField,
+                name: startingTagField,
+                type: "number",
+                min: 1,
+                required: true,
+                defaultValue: participant.startingTag,
+              })
+            )
+          : null,
+        reviewErrors[matchStatusField]
+          ? createElement("p", { "data-field-error": matchStatusField }, reviewErrors[matchStatusField])
+          : null,
+        reviewErrors[startingTagField]
+          ? createElement("p", { "data-field-error": startingTagField }, reviewErrors[startingTagField])
+          : null
+      );
+    }
+  );
+
+  return createElement(
+    "section",
+    null,
+    createElement("h2", null, "Preview Event"),
+    createElement("p", null, preview.event?.name || ""),
+    createElement("p", null, preview.event?.slug || ""),
+    createElement("p", null, preview.event?.date || ""),
+    createElement(
+      "form",
+      { action },
+      createElement("input", {
+        type: "hidden",
+        name: "previewPayload",
+        value: JSON.stringify(preview),
+      }),
+      createElement("h3", null, "Participant Review"),
+      ...participantRows,
+      createElement("button", { type: "submit" }, "Review Imported Players")
+    )
+  );
 }
 
 export default function AdminNewEventPage({ searchParams = {} } = {}) {
   requireAdmin();
   const draftEventAction = createAdminDraftEventAction();
   const fetchUdiscPreviewAction = createFetchUdiscPreviewAction();
+  const reviewUdiscPreviewAction = createReviewUdiscPreviewAction();
   const wasCreated = searchParams?.created === "1";
+  const preview = parsePreviewPayload(searchParams?.udisc_preview);
+  const reviewErrors = parseReviewErrors(searchParams?.review_errors);
+  const udiscError = preview || !searchParams?.udisc_preview
+    ? searchParams?.udisc_error
+    : messageForUdiscError("MAPPING_ERROR");
   const fieldErrors = {
     name: searchParams?.error_name || "",
     slug: searchParams?.error_slug || "",
@@ -173,7 +351,8 @@ export default function AdminNewEventPage({ searchParams = {} } = {}) {
       createElement("input", { id: "udiscUrl", name: "udiscUrl", type: "url", required: true }),
       createElement("button", { type: "submit" }, "Fetch UDisc Preview")
     ),
-    searchParams?.udisc_error ? createElement("p", null, searchParams.udisc_error) : null,
+    udiscError ? createElement("p", null, udiscError) : null,
+    renderUdiscPreviewSection({ preview, reviewErrors, action: reviewUdiscPreviewAction }),
     wasCreated ? createElement("p", null, "Draft created.") : null,
     renderAdminDraftEventForm({ action: draftEventAction, fieldErrors })
   );
