@@ -92,7 +92,7 @@ Source plans:
 - `[x]` Phase 3: Admin Access + Event Draft Creation
 - `[ ]` Phase 4: UDisc Fetch + Draft Preview
 - `[ ]` Phase 5: Starting Tag Entry + Validation
-- `[ ]` Phase 6: Confirm Import
+- `[x]` Phase 6: Confirm Import
 - `[ ]` Phase 8: Post-Confirm Edits + Audit Trail
 - `[ ]` Phase 9: Failure and Integrity Hardening
 
@@ -122,14 +122,15 @@ Source plans:
 
 ## Current Snapshot
 
-- Active branch: `phase-3-admin-draft-event`
+- Active branch: `phase-6-confirm-import`
 - Phase 1 status: complete
 - Phase 2A status: complete
 - Phase 2B status: complete (public event routes + hardening + normalization)
 - Phase 3 status: complete (admin auth guard + login + draft event create flow)
-- Recommended next step: begin Phase 4 planning/tasks
+- Phase 6 confirm-import status: complete (server-side confirm flow + admin confirm UX + query coverage)
+- Recommended next step: begin Phase 8 planning/tasks
 
-## Phase 6: Public Event Views (`/events`, `/events/:slug`)
+## Phase 2B: Public Event Views (`/events`, `/events/:slug`)
 
 ### Task 6.1 - Public events query contract
 
@@ -181,3 +182,54 @@ Source plans:
   - Added shared numeric-safe points resolver in `lib/resolvePointsValue.js`.
   - Leaderboard/public query points contracts now support precedence: `points` -> `eventTotal` -> `event_total_pts`.
   - Added targeted tests for status-based confirmation, points precedence, and numeric coercion safety.
+
+## Phase 6: Confirm Import
+
+### Task 6.1 - Define confirm-import service contract
+
+- Status: `[x] Completed`
+- Notes:
+  - Added `lib/confirmImportedEvent.js` as the server-side confirm-import workflow.
+  - Kept validation, scoring preparation, persistence ordering, and rollback handling inside the service boundary.
+
+### Task 6.2 - Validate reviewed preview and block invalid imports
+
+- Status: `[x] Completed`
+- Notes:
+  - Re-validates event fields, participant rows, ambiguous matches, duplicate starting tags, and slug collisions before writes.
+  - Returns structured `fieldErrors` for expected review/confirm failures.
+
+### Task 6.3 - Create new player records for unmatched imports
+
+- Status: `[x] Completed`
+- Notes:
+  - Unmatched reviewed rows create new player records during confirm.
+  - Newly created player ids are threaded into subsequent scoring and persistence writes.
+
+### Task 6.4 - Persist confirmed event and event results
+
+- Status: `[x] Completed`
+- Notes:
+  - Confirm now writes a `confirmed` event plus per-player event results through the in-memory store helpers.
+  - Later-write failures trigger rollback attempts for created points, results, events, and players.
+
+### Task 6.5 - Score confirmed import and persist event points
+
+- Status: `[x] Completed`
+- Notes:
+  - Confirmed imports are scored with `scoreEvent` before event/result/point persistence proceeds.
+  - Persisted point rows now feed existing leaderboard and public event query paths.
+
+### Task 6.6 - Wire admin confirm action and success/error UX
+
+- Status: `[x] Completed`
+- Notes:
+  - Added confirm server action, malformed-payload redirect handling, and success redirect state with `confirmed_slug`.
+  - Preview review UI now renders a confirm form only after the reviewed payload is valid.
+
+### Task 6.7 - Add confirm-import verification coverage
+
+- Status: `[x] Completed`
+- Notes:
+  - Confirm service, integration, and admin-route regression tests cover invalid previews, rollbacks, persistence, and confirm UX.
+  - Final regression suite and production build passed in the Phase 6 worktree.

@@ -5,6 +5,7 @@ import createEventDraftModule from "../../../../lib/createEventDraft.js";
 import eventDraftStore from "../../../../lib/eventDraftStore.js";
 import publicEventsQuery from "../../../../lib/publicEventsQuery.js";
 import eventsDataModule from "../../../../lib/eventsData.js";
+import confirmImportedEventModule from "../../../../lib/confirmImportedEvent.js";
 import reviewUdiscDraftPreviewModule from "../../../../lib/reviewUdiscDraftPreview.js";
 import udiscClientModule from "../../../../lib/udiscClient.js";
 import udiscToDraftPreviewModule from "../../../../lib/udiscToDraftPreview.js";
@@ -13,7 +14,19 @@ const { requireAdmin } = adminAuth;
 const { createEventDraft } = createEventDraftModule;
 const { findEventBySlug, insertEventDraft } = eventDraftStore;
 const { getPublicEventScoreboardBySlug } = publicEventsQuery;
-const { getEventsData } = eventsDataModule;
+const {
+  getEventsData,
+  findConfirmedEventBySlug,
+  insertPlayer,
+  deletePlayer,
+  insertConfirmedEvent,
+  deleteConfirmedEvent,
+  insertEventResults,
+  deleteEventResult,
+  insertEventPoints,
+  deleteEventPoint,
+} = eventsDataModule;
+const { confirmImportedEvent } = confirmImportedEventModule;
 const { reviewUdiscDraftPreview } = reviewUdiscDraftPreviewModule;
 const { fetchUdiscEventFromUrl } = udiscClientModule;
 const { mapUdiscEventToDraftPreview } = udiscToDraftPreviewModule;
@@ -92,6 +105,16 @@ function parsePreviewPayload(value) {
 
 function parseReviewErrors(value) {
   return parseJsonObject(value) || {};
+}
+
+function applyPreviewSlug(preview, slugValue) {
+  return {
+    ...preview,
+    event: {
+      ...preview.event,
+      slug: String(slugValue || preview.event?.slug || ""),
+    },
+  };
 }
 
 function buildPreviewRedirectUrl({ preview, previewValid = false, reviewErrors = null, udiscError = "" } = {}) {
@@ -257,7 +280,79 @@ export function createReviewUdiscPreviewAction({
   };
 }
 
-export function renderUdiscPreviewSection({ preview, reviewErrors = {}, action } = {}) {
+export function createConfirmUdiscImportAction({
+  requireAdminAccess = requireAdmin,
+  confirmImportedEventAdapter = confirmImportedEvent,
+  findDraftEventBySlugAdapter = findEventBySlug,
+  findConfirmedEventBySlugAdapter = findConfirmedEventBySlug,
+  insertPlayerAdapter = insertPlayer,
+  rollbackPlayerAdapter = deletePlayer,
+  insertConfirmedEventAdapter = insertConfirmedEvent,
+  rollbackConfirmedEventAdapter = deleteConfirmedEvent,
+  insertEventResultsAdapter = insertEventResults,
+  rollbackEventResultAdapter = deleteEventResult,
+  insertEventPointsAdapter = insertEventPoints,
+  rollbackEventPointAdapter = deleteEventPoint,
+  redirectTo = redirect,
+} = {}) {
+  return async function confirmUdiscImportAction(_previousState, formData) {
+    "use server";
+
+    requireAdminAccess();
+
+    const preview = parsePreviewPayload(formData.get("previewPayload"));
+    if (!preview) {
+      redirectTo("/admin/events/new?confirm_error=Imported+preview+is+invalid.");
+      return;
+    }
+
+    const previewWithSlug = applyPreviewSlug(preview, formData.get("slug"));
+
+    const result = await confirmImportedEventAdapter({
+      preview: previewWithSlug,
+      findExistingEventBySlug: async (slug) => {
+        const [draftMatch, confirmedMatch] = await Promise.all([
+          findDraftEventBySlugAdapter(slug),
+          findConfirmedEventBySlugAdapter(slug),
+        ]);
+
+        return draftMatch || confirmedMatch;
+      },
+      insertPlayer: insertPlayerAdapter,
+      rollbackPlayer: rollbackPlayerAdapter,
+      insertConfirmedEvent: insertConfirmedEventAdapter,
+      rollbackConfirmedEvent: rollbackConfirmedEventAdapter,
+      insertEventResult: async (payload) => insertEventResultsAdapter([payload]).then((rows) => rows[0]),
+      rollbackEventResult: rollbackEventResultAdapter,
+      insertEventPoint: async (payload) => insertEventPointsAdapter([payload]).then((rows) => rows[0]),
+      rollbackEventPoint: rollbackEventPointAdapter,
+    });
+
+    if (!result?.ok) {
+      redirectTo(
+        buildPreviewRedirectUrl({
+          preview: previewWithSlug,
+          previewValid: true,
+          reviewErrors: result?.fieldErrors,
+        })
+      );
+      return;
+    }
+
+    const params = new URLSearchParams();
+    params.set("confirmed", "1");
+    params.set("confirmed_slug", result.event.slug);
+    redirectTo(`/admin/events/new?${params.toString()}`);
+  };
+}
+
+export function renderUdiscPreviewSection({
+  preview,
+  previewValid = false,
+  reviewErrors = {},
+  action,
+  confirmAction,
+} = {}) {
   if (!preview) return null;
 
   const participantRows = (Array.isArray(preview.participants) ? preview.participants : []).map(
@@ -306,6 +401,9 @@ export function renderUdiscPreviewSection({ preview, reviewErrors = {}, action }
     createElement("p", null, preview.event?.name || ""),
     createElement("p", null, preview.event?.slug || ""),
     createElement("p", null, preview.event?.date || ""),
+    reviewErrors.name ? createElement("p", { "data-field-error": "name" }, reviewErrors.name) : null,
+    reviewErrors.slug ? createElement("p", { "data-field-error": "slug" }, reviewErrors.slug) : null,
+    reviewErrors.date ? createElement("p", { "data-field-error": "date" }, reviewErrors.date) : null,
     createElement(
       "form",
       { action },
@@ -317,7 +415,28 @@ export function renderUdiscPreviewSection({ preview, reviewErrors = {}, action }
       createElement("h3", null, "Participant Review"),
       ...participantRows,
       createElement("button", { type: "submit" }, "Review Imported Players")
-    )
+    ),
+    previewValid === true
+      ? createElement(
+          "form",
+          { action: confirmAction },
+          createElement("input", {
+            type: "hidden",
+            name: "previewPayload",
+            value: JSON.stringify(preview),
+          }),
+          createElement("label", { htmlFor: "confirm_slug" }, "Slug"),
+          createElement("input", {
+            id: "confirm_slug",
+            name: "slug",
+            type: "text",
+            required: true,
+            defaultValue: preview.event?.slug || "",
+          }),
+          createElement("p", null, "This import is ready to confirm."),
+          createElement("button", { type: "submit" }, "Confirm Import")
+        )
+      : null
   );
 }
 
@@ -326,9 +445,14 @@ export default function AdminNewEventPage({ searchParams = {} } = {}) {
   const draftEventAction = createAdminDraftEventAction();
   const fetchUdiscPreviewAction = createFetchUdiscPreviewAction();
   const reviewUdiscPreviewAction = createReviewUdiscPreviewAction();
+  const confirmUdiscImportAction = createConfirmUdiscImportAction();
   const wasCreated = searchParams?.created === "1";
+  const wasConfirmed = searchParams?.confirmed === "1";
+  const previewValid = searchParams?.preview_valid === "1";
   const preview = parsePreviewPayload(searchParams?.udisc_preview);
   const reviewErrors = parseReviewErrors(searchParams?.review_errors);
+  const confirmError = searchParams?.confirm_error || "";
+  const confirmedSlug = searchParams?.confirmed_slug || "";
   const udiscError = preview || !searchParams?.udisc_preview
     ? searchParams?.udisc_error
     : messageForUdiscError("MAPPING_ERROR");
@@ -352,7 +476,15 @@ export default function AdminNewEventPage({ searchParams = {} } = {}) {
       createElement("button", { type: "submit" }, "Fetch UDisc Preview")
     ),
     udiscError ? createElement("p", null, udiscError) : null,
-    renderUdiscPreviewSection({ preview, reviewErrors, action: reviewUdiscPreviewAction }),
+    confirmError ? createElement("p", null, confirmError) : null,
+    renderUdiscPreviewSection({
+      preview,
+      previewValid,
+      reviewErrors,
+      action: reviewUdiscPreviewAction,
+      confirmAction: confirmUdiscImportAction,
+    }),
+    wasConfirmed ? createElement("p", null, `Imported event confirmed. ${confirmedSlug}`) : null,
     wasCreated ? createElement("p", null, "Draft created.") : null,
     renderAdminDraftEventForm({ action: draftEventAction, fieldErrors })
   );
