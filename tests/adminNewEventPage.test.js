@@ -342,6 +342,19 @@ test("AdminNewEventPage source uses URL-based UDisc preview form fields", async 
   assert.match(source, /type: "url"/);
 });
 
+test("AdminNewEventPage source uses exported top-level server actions for live forms", async () => {
+  const source = await fs.readFile("app/admin/events/new/page.js", "utf8");
+
+  assert.match(source, /export async function adminDraftEventAction\(formData\)/);
+  assert.match(source, /export async function fetchUdiscPreviewAction\(formData\)/);
+  assert.match(source, /export async function reviewUdiscPreviewAction\(formData\)/);
+  assert.match(source, /export async function confirmUdiscImportAction\(formData\)/);
+  assert.match(source, /\{ action: fetchUdiscPreviewAction \}/);
+  assert.match(source, /action: reviewUdiscPreviewAction/);
+  assert.match(source, /confirmAction: confirmUdiscImportAction/);
+  assert.match(source, /renderAdminDraftEventForm\([\s\S]*action: adminDraftEventAction,[\s\S]*fieldErrors[\s\S]*\)/);
+});
+
 test("createFetchUdiscPreviewAction defaults to fetchUdiscEventFromUrl client export", async () => {
   const source = await fs.readFile("app/admin/events/new/page.js", "utf8");
 

@@ -18,9 +18,7 @@ export function createAdminLoginAction({
   verifySecret = verifyAdminSecret,
   nodeEnv = process.env.NODE_ENV,
 } = {}) {
-  return async function loginAction(_previousState, formData) {
-    "use server";
-
+  return async function loginAction(formData) {
     const submittedSecret = formData.get("secret");
     const candidateSecret = typeof submittedSecret === "string" ? submittedSecret : "";
 
@@ -38,16 +36,27 @@ export function createAdminLoginAction({
   };
 }
 
-export default function AdminLoginPage() {
-  const loginAction = createAdminLoginAction();
+export async function adminLoginAction(formData) {
+  "use server";
 
+  return createAdminLoginAction({
+    getCookiesStore: cookies,
+    redirectTo: redirect,
+    createSessionToken: createAdminSessionToken,
+    getCookieOptions: getAdminCookieOptions,
+    verifySecret: verifyAdminSecret,
+    nodeEnv: process.env.NODE_ENV,
+  })(formData);
+}
+
+export default function AdminLoginPage() {
   return createElement(
     "main",
     null,
     createElement("h1", null, "Admin Login"),
     createElement(
       "form",
-      { action: loginAction },
+      { action: adminLoginAction },
       createElement("label", { htmlFor: "secret" }, "Shared secret"),
       createElement("input", {
         id: "secret",

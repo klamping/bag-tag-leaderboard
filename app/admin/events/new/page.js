@@ -198,6 +198,12 @@ export function createAdminDraftEventAction({
   };
 }
 
+export async function adminDraftEventAction(formData) {
+  "use server";
+
+  return createAdminDraftEventAction()(formData);
+}
+
 export function createFetchUdiscPreviewAction({
   requireAdminAccess = requireAdmin,
   fetchUdiscEventAdapter = fetchUdiscEventFromUrl,
@@ -244,6 +250,12 @@ export function createFetchUdiscPreviewAction({
   };
 }
 
+export async function fetchUdiscPreviewAction(formData) {
+  "use server";
+
+  return createFetchUdiscPreviewAction()(formData);
+}
+
 export function createReviewUdiscPreviewAction({
   requireAdminAccess = requireAdmin,
   getKnownPlayers: getKnownPlayersAdapter = getKnownPlayers,
@@ -278,6 +290,12 @@ export function createReviewUdiscPreviewAction({
       })
     );
   };
+}
+
+export async function reviewUdiscPreviewAction(formData) {
+  "use server";
+
+  return createReviewUdiscPreviewAction()(formData);
 }
 
 export function createConfirmUdiscImportAction({
@@ -344,6 +362,12 @@ export function createConfirmUdiscImportAction({
     params.set("confirmed_slug", result.event.slug);
     redirectTo(`/admin/events/new?${params.toString()}`);
   };
+}
+
+export async function confirmUdiscImportAction(formData) {
+  "use server";
+
+  return createConfirmUdiscImportAction()(formData);
 }
 
 export function renderUdiscPreviewSection({
@@ -442,10 +466,6 @@ export function renderUdiscPreviewSection({
 
 export default function AdminNewEventPage({ searchParams = {} } = {}) {
   requireAdmin();
-  const draftEventAction = createAdminDraftEventAction();
-  const fetchUdiscPreviewAction = createFetchUdiscPreviewAction();
-  const reviewUdiscPreviewAction = createReviewUdiscPreviewAction();
-  const confirmUdiscImportAction = createConfirmUdiscImportAction();
   const wasCreated = searchParams?.created === "1";
   const wasConfirmed = searchParams?.confirmed === "1";
   const previewValid = searchParams?.preview_valid === "1";
@@ -486,6 +506,6 @@ export default function AdminNewEventPage({ searchParams = {} } = {}) {
     }),
     wasConfirmed ? createElement("p", null, `Imported event confirmed. ${confirmedSlug}`) : null,
     wasCreated ? createElement("p", null, "Draft created.") : null,
-    renderAdminDraftEventForm({ action: draftEventAction, fieldErrors })
+    renderAdminDraftEventForm({ action: adminDraftEventAction, fieldErrors })
   );
 }

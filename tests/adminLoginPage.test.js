@@ -21,10 +21,7 @@ test("loginAction throws on invalid shared secret and does not set cookie", asyn
     nodeEnv: "production",
   });
 
-  await assert.rejects(
-    () => loginAction({}, new FormData()),
-    /Invalid admin credentials/
-  );
+  await assert.rejects(() => loginAction(new FormData()), /Invalid admin credentials/);
 });
 
 test("loginAction sets session cookie and redirects on valid shared secret", async () => {
@@ -51,10 +48,23 @@ test("loginAction sets session cookie and redirects on valid shared secret", asy
   const formData = new FormData();
   formData.set("secret", "top-secret");
 
-  await loginAction({}, formData);
+  await loginAction(formData);
 
   assert.deepEqual(cookieCalls, [
     ["admin_session", "signed-token", { secure: true, httpOnly: true, maxAge: 1800 }],
   ]);
   assert.equal(redirectedTo, "/admin/events/new");
+});
+
+test("AdminLoginPage wires the form to the exported top-level action", async () => {
+  const module = await import("../app/admin/login/page.js");
+
+  const page = module.default();
+  const children = Array.isArray(page.props.children)
+    ? page.props.children
+    : [page.props.children];
+  const form = children.find((child) => child?.type === "form");
+
+  assert.ok(form);
+  assert.equal(form.props.action, module.adminLoginAction);
 });
