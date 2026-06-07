@@ -61,12 +61,19 @@ test("listAdminEvents normalizes confirmed events and drafts into one admin list
   ]);
 });
 
-test("listAdminEvents sorts deterministically by date, slug, and source type", async () => {
+test("listAdminEvents sorts same-date rows by name before slug", async () => {
   resetEventDraftStore();
 
   await insertEventDraft({
+    slug: "zeta-open",
+    name: "Alpha Open",
+    date: "2026-05-01",
+    status: "draft",
+  });
+
+  await insertEventDraft({
     slug: "alpha-open",
-    name: "Alpha Open Draft",
+    name: "Alpha Open",
     date: "2026-05-01",
     status: "draft",
   });
@@ -75,15 +82,15 @@ test("listAdminEvents sorts deterministically by date, slug, and source type", a
     events: [
       {
         id: "evt_confirmed_0002",
-        slug: "alpha-open",
-        name: "Alpha Open Confirmed",
+        slug: "beta-bash",
+        name: "Beta Bash",
         eventDate: "2026-05-01",
         status: "confirmed",
       },
       {
         id: "evt_confirmed_0003",
-        slug: "beta-bash",
-        name: "Beta Bash",
+        slug: "alpha-open",
+        name: "Zulu Open",
         eventDate: "2026-05-01",
         status: "confirmed",
       },
@@ -102,8 +109,9 @@ test("listAdminEvents sorts deterministically by date, slug, and source type", a
     rows.map((row) => `${row.date}:${row.slug}:${row.sourceType}`),
     [
       "2026-05-01:alpha-open:draft",
-      "2026-05-01:alpha-open:confirmed",
+      "2026-05-01:zeta-open:draft",
       "2026-05-01:beta-bash:confirmed",
+      "2026-05-01:alpha-open:confirmed",
       "2026-04-12:spring-showdown:confirmed",
     ]
   );
