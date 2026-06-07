@@ -157,45 +157,72 @@ export function createAdminDraftEventAction({
   insertEventDraftAdapter = insertEventDraft,
   redirectTo = redirect,
 } = {}) {
-  return async function draftEventAction(_previousState, formData) {
+  return async function draftEventAction(formData) {
     "use server";
 
-    requireAdminAccess();
-
-    const input = {
-      name: formData.get("name"),
-      slug: formData.get("slug"),
-      date: formData.get("date"),
-      isMajor: formData.get("isMajor"),
-      notes: formData.get("notes"),
-    };
-
-    const result = await createDraft({
-      input,
-      findEventBySlug: async (slug) => {
-        const [draftMatch, nonDraftMatch] = await Promise.all([
-          findEventBySlugAdapter(slug),
-          findNonDraftEventBySlugAdapter(slug),
-        ]);
-
-        return draftMatch || nonDraftMatch;
-      },
-      insertEventDraft: insertEventDraftAdapter,
+    return submitAdminDraftEvent(formData, {
+      requireAdminAccess,
+      createDraft,
+      findEventBySlugAdapter,
+      findNonDraftEventBySlugAdapter,
+      insertEventDraftAdapter,
+      redirectTo,
     });
+  };
+}
 
-    if (result?.fieldErrors) {
-      const params = new URLSearchParams();
-      const fieldErrorEntries = Object.entries(result.fieldErrors);
-      for (const [fieldName, message] of fieldErrorEntries) {
-        params.set(`error_${fieldName}`, message);
-      }
+async function submitAdminDraftEvent(
+  formData,
+  {
+    requireAdminAccess = requireAdmin,
+    createDraft = createEventDraft,
+    findEventBySlugAdapter = findEventBySlug,
+    findNonDraftEventBySlugAdapter = findNonDraftEventBySlug,
+    insertEventDraftAdapter = insertEventDraft,
+    redirectTo = redirect,
+  } = {}
+) {
+  requireAdminAccess();
 
-      redirectTo(`/admin/events/new?${params.toString()}`);
-      return;
+  const input = {
+    name: formData.get("name"),
+    slug: formData.get("slug"),
+    date: formData.get("date"),
+    isMajor: formData.get("isMajor"),
+    notes: formData.get("notes"),
+  };
+
+  const result = await createDraft({
+    input,
+    findEventBySlug: async (slug) => {
+      const [draftMatch, nonDraftMatch] = await Promise.all([
+        findEventBySlugAdapter(slug),
+        findNonDraftEventBySlugAdapter(slug),
+      ]);
+
+      return draftMatch || nonDraftMatch;
+    },
+    insertEventDraft: insertEventDraftAdapter,
+  });
+
+  if (result?.fieldErrors) {
+    const params = new URLSearchParams();
+    const fieldErrorEntries = Object.entries(result.fieldErrors);
+    for (const [fieldName, message] of fieldErrorEntries) {
+      params.set(`error_${fieldName}`, message);
     }
 
-    redirectTo("/admin/events/new?created=1");
-  };
+    redirectTo(`/admin/events/new?${params.toString()}`);
+    return;
+  }
+
+  redirectTo("/admin/events/new?created=1");
+}
+
+async function draftEventAction(formData) {
+  "use server";
+
+  return submitAdminDraftEvent(formData);
 }
 
 export function createFetchUdiscPreviewAction({
@@ -205,43 +232,62 @@ export function createFetchUdiscPreviewAction({
   getKnownPlayers: getKnownPlayersAdapter = getKnownPlayers,
   redirectTo = redirect,
 } = {}) {
-  return async function fetchUdiscPreviewAction(_previousState, formData) {
+  return async function fetchUdiscPreviewAction(formData) {
     "use server";
 
-    requireAdminAccess();
-    const udiscUrl = String(formData.get("udiscUrl") || "").trim();
-
-    try {
-      const raw = await fetchUdiscEventAdapter({ leaderboardUrl: udiscUrl });
-      const mapped = mapUdiscEventToDraftPreviewAdapter(raw);
-      if (!mapped.ok) {
-        redirectTo(
-          buildPreviewRedirectUrl({
-            udiscError: messageForUdiscError("MAPPING_ERROR"),
-          })
-        );
-        return;
-      }
-
-      redirectTo(
-        buildPreviewRedirectUrl({
-          preview: reviewUdiscDraftPreview({
-            preview: mapped.preview,
-            knownPlayers: getKnownPlayersAdapter(),
-            validateStartingTags: false,
-          }).preview,
-        })
-      );
-      return;
-    } catch (error) {
-      redirectTo(
-        buildPreviewRedirectUrl({
-          udiscError: messageForUdiscError(error?.type),
-        })
-      );
-      return;
-    }
+    return submitFetchUdiscPreview(formData, {
+      requireAdminAccess,
+      fetchUdiscEventAdapter,
+      mapUdiscEventToDraftPreviewAdapter,
+      getKnownPlayersAdapter,
+      redirectTo,
+    });
   };
+}
+
+async function submitFetchUdiscPreview(
+  formData,
+  {
+    requireAdminAccess = requireAdmin,
+    fetchUdiscEventAdapter = fetchUdiscEventFromUrl,
+    mapUdiscEventToDraftPreviewAdapter = mapUdiscEventToDraftPreview,
+    getKnownPlayersAdapter = getKnownPlayers,
+    redirectTo = redirect,
+  } = {}
+) {
+  requireAdminAccess();
+  const udiscUrl = String(formData.get("udiscUrl") || "").trim();
+  let redirectUrl;
+
+  try {
+    const raw = await fetchUdiscEventAdapter({ leaderboardUrl: udiscUrl });
+    const mapped = mapUdiscEventToDraftPreviewAdapter(raw);
+    if (!mapped.ok) {
+      redirectUrl = buildPreviewRedirectUrl({
+        udiscError: messageForUdiscError("MAPPING_ERROR"),
+      });
+    } else {
+      redirectUrl = buildPreviewRedirectUrl({
+        preview: reviewUdiscDraftPreview({
+          preview: mapped.preview,
+          knownPlayers: getKnownPlayersAdapter(),
+          validateStartingTags: false,
+        }).preview,
+      });
+    }
+  } catch (error) {
+    redirectUrl = buildPreviewRedirectUrl({
+      udiscError: messageForUdiscError(error?.type),
+    });
+  }
+
+  redirectTo(redirectUrl);
+}
+
+async function fetchUdiscPreviewAction(formData) {
+  "use server";
+
+  return submitFetchUdiscPreview(formData);
 }
 
 export function createReviewUdiscPreviewAction({
@@ -249,35 +295,56 @@ export function createReviewUdiscPreviewAction({
   getKnownPlayers: getKnownPlayersAdapter = getKnownPlayers,
   redirectTo = redirect,
 } = {}) {
-  return async function reviewUdiscPreviewAction(_previousState, formData) {
+  return async function reviewUdiscPreviewAction(formData) {
     "use server";
 
-    requireAdminAccess();
-
-    const preview = parsePreviewPayload(formData.get("previewPayload"));
-    if (!preview) {
-      redirectTo(
-        buildPreviewRedirectUrl({
-          udiscError: messageForUdiscError("MAPPING_ERROR"),
-        })
-      );
-      return;
-    }
-
-    const result = reviewUdiscDraftPreview({
-      preview,
-      knownPlayers: getKnownPlayersAdapter(),
-      startingTagsByIndex: collectStartingTagsByIndex(formData, preview.participants.length),
+    return submitReviewUdiscPreview(formData, {
+      requireAdminAccess,
+      getKnownPlayersAdapter,
+      redirectTo,
     });
+  };
+}
 
+async function submitReviewUdiscPreview(
+  formData,
+  {
+    requireAdminAccess = requireAdmin,
+    getKnownPlayersAdapter = getKnownPlayers,
+    redirectTo = redirect,
+  } = {}
+) {
+  requireAdminAccess();
+
+  const preview = parsePreviewPayload(formData.get("previewPayload"));
+  if (!preview) {
     redirectTo(
       buildPreviewRedirectUrl({
-        preview: result.preview,
-        previewValid: result.ok,
-        reviewErrors: result.ok ? null : result.fieldErrors,
+        udiscError: messageForUdiscError("MAPPING_ERROR"),
       })
     );
-  };
+    return;
+  }
+
+  const result = reviewUdiscDraftPreview({
+    preview,
+    knownPlayers: getKnownPlayersAdapter(),
+    startingTagsByIndex: collectStartingTagsByIndex(formData, preview.participants.length),
+  });
+
+  redirectTo(
+    buildPreviewRedirectUrl({
+      preview: result.preview,
+      previewValid: result.ok,
+      reviewErrors: result.ok ? null : result.fieldErrors,
+    })
+  );
+}
+
+async function reviewUdiscPreviewAction(formData) {
+  "use server";
+
+  return submitReviewUdiscPreview(formData);
 }
 
 export function createConfirmUdiscImportAction({
@@ -295,55 +362,96 @@ export function createConfirmUdiscImportAction({
   rollbackEventPointAdapter = deleteEventPoint,
   redirectTo = redirect,
 } = {}) {
-  return async function confirmUdiscImportAction(_previousState, formData) {
+  return async function confirmUdiscImportAction(formData) {
     "use server";
 
-    requireAdminAccess();
-
-    const preview = parsePreviewPayload(formData.get("previewPayload"));
-    if (!preview) {
-      redirectTo("/admin/events/new?confirm_error=Imported+preview+is+invalid.");
-      return;
-    }
-
-    const previewWithSlug = applyPreviewSlug(preview, formData.get("slug"));
-
-    const result = await confirmImportedEventAdapter({
-      preview: previewWithSlug,
-      findExistingEventBySlug: async (slug) => {
-        const [draftMatch, confirmedMatch] = await Promise.all([
-          findDraftEventBySlugAdapter(slug),
-          findConfirmedEventBySlugAdapter(slug),
-        ]);
-
-        return draftMatch || confirmedMatch;
-      },
-      insertPlayer: insertPlayerAdapter,
-      rollbackPlayer: rollbackPlayerAdapter,
-      insertConfirmedEvent: insertConfirmedEventAdapter,
-      rollbackConfirmedEvent: rollbackConfirmedEventAdapter,
-      insertEventResult: async (payload) => insertEventResultsAdapter([payload]).then((rows) => rows[0]),
-      rollbackEventResult: rollbackEventResultAdapter,
-      insertEventPoint: async (payload) => insertEventPointsAdapter([payload]).then((rows) => rows[0]),
-      rollbackEventPoint: rollbackEventPointAdapter,
+    return submitConfirmUdiscImport(formData, {
+      requireAdminAccess,
+      confirmImportedEventAdapter,
+      findDraftEventBySlugAdapter,
+      findConfirmedEventBySlugAdapter,
+      insertPlayerAdapter,
+      rollbackPlayerAdapter,
+      insertConfirmedEventAdapter,
+      rollbackConfirmedEventAdapter,
+      insertEventResultsAdapter,
+      rollbackEventResultAdapter,
+      insertEventPointsAdapter,
+      rollbackEventPointAdapter,
+      redirectTo,
     });
-
-    if (!result?.ok) {
-      redirectTo(
-        buildPreviewRedirectUrl({
-          preview: previewWithSlug,
-          previewValid: true,
-          reviewErrors: result?.fieldErrors,
-        })
-      );
-      return;
-    }
-
-    const params = new URLSearchParams();
-    params.set("confirmed", "1");
-    params.set("confirmed_slug", result.event.slug);
-    redirectTo(`/admin/events/new?${params.toString()}`);
   };
+}
+
+async function submitConfirmUdiscImport(
+  formData,
+  {
+    requireAdminAccess = requireAdmin,
+    confirmImportedEventAdapter = confirmImportedEvent,
+    findDraftEventBySlugAdapter = findEventBySlug,
+    findConfirmedEventBySlugAdapter = findConfirmedEventBySlug,
+    insertPlayerAdapter = insertPlayer,
+    rollbackPlayerAdapter = deletePlayer,
+    insertConfirmedEventAdapter = insertConfirmedEvent,
+    rollbackConfirmedEventAdapter = deleteConfirmedEvent,
+    insertEventResultsAdapter = insertEventResults,
+    rollbackEventResultAdapter = deleteEventResult,
+    insertEventPointsAdapter = insertEventPoints,
+    rollbackEventPointAdapter = deleteEventPoint,
+    redirectTo = redirect,
+  } = {}
+) {
+  requireAdminAccess();
+
+  const preview = parsePreviewPayload(formData.get("previewPayload"));
+  if (!preview) {
+    redirectTo("/admin/events/new?confirm_error=Imported+preview+is+invalid.");
+    return;
+  }
+
+  const previewWithSlug = applyPreviewSlug(preview, formData.get("slug"));
+
+  const result = await confirmImportedEventAdapter({
+    preview: previewWithSlug,
+    findExistingEventBySlug: async (slug) => {
+      const [draftMatch, confirmedMatch] = await Promise.all([
+        findDraftEventBySlugAdapter(slug),
+        findConfirmedEventBySlugAdapter(slug),
+      ]);
+
+      return draftMatch || confirmedMatch;
+    },
+    insertPlayer: insertPlayerAdapter,
+    rollbackPlayer: rollbackPlayerAdapter,
+    insertConfirmedEvent: insertConfirmedEventAdapter,
+    rollbackConfirmedEvent: rollbackConfirmedEventAdapter,
+    insertEventResult: async (payload) => insertEventResultsAdapter([payload]).then((rows) => rows[0]),
+    rollbackEventResult: rollbackEventResultAdapter,
+    insertEventPoint: async (payload) => insertEventPointsAdapter([payload]).then((rows) => rows[0]),
+    rollbackEventPoint: rollbackEventPointAdapter,
+  });
+
+  if (!result?.ok) {
+    redirectTo(
+      buildPreviewRedirectUrl({
+        preview: previewWithSlug,
+        previewValid: true,
+        reviewErrors: result?.fieldErrors,
+      })
+    );
+    return;
+  }
+
+  const params = new URLSearchParams();
+  params.set("confirmed", "1");
+  params.set("confirmed_slug", result.event.slug);
+  redirectTo(`/admin/events/new?${params.toString()}`);
+}
+
+async function confirmUdiscImportAction(formData) {
+  "use server";
+
+  return submitConfirmUdiscImport(formData);
 }
 
 export function renderUdiscPreviewSection({
@@ -362,7 +470,10 @@ export function renderUdiscPreviewSection({
 
       return createElement(
         "div",
-        { key: `${participant.externalPlayerId || participant.playerName || index}` },
+        {
+          key: `${participant.externalPlayerId || participant.playerName || index}`,
+          "data-testid": `participant-review-row-${index}`,
+        },
         createElement("p", null, participant.playerName),
         createElement("p", null, `Finish place: ${participant.finishPlace}`),
         participant.matchStatus === "matched"
@@ -381,6 +492,7 @@ export function renderUdiscPreviewSection({
                 min: 1,
                 required: true,
                 defaultValue: participant.startingTag,
+                "data-testid": `participant-review-starting-tag-${index}`,
               })
             )
           : null,
@@ -406,7 +518,7 @@ export function renderUdiscPreviewSection({
     reviewErrors.date ? createElement("p", { "data-field-error": "date" }, reviewErrors.date) : null,
     createElement(
       "form",
-      { action },
+      { action, "data-testid": "participant-review-form" },
       createElement("input", {
         type: "hidden",
         name: "previewPayload",
@@ -419,7 +531,7 @@ export function renderUdiscPreviewSection({
     previewValid === true
       ? createElement(
           "form",
-          { action: confirmAction },
+          { action: confirmAction, "data-testid": "confirm-import-form" },
           createElement("input", {
             type: "hidden",
             name: "previewPayload",
@@ -432,6 +544,7 @@ export function renderUdiscPreviewSection({
             type: "text",
             required: true,
             defaultValue: preview.event?.slug || "",
+            "data-testid": "confirm-import-slug",
           }),
           createElement("p", null, "This import is ready to confirm."),
           createElement("button", { type: "submit" }, "Confirm Import")
@@ -442,10 +555,6 @@ export function renderUdiscPreviewSection({
 
 export default function AdminNewEventPage({ searchParams = {} } = {}) {
   requireAdmin();
-  const draftEventAction = createAdminDraftEventAction();
-  const fetchUdiscPreviewAction = createFetchUdiscPreviewAction();
-  const reviewUdiscPreviewAction = createReviewUdiscPreviewAction();
-  const confirmUdiscImportAction = createConfirmUdiscImportAction();
   const wasCreated = searchParams?.created === "1";
   const wasConfirmed = searchParams?.confirmed === "1";
   const previewValid = searchParams?.preview_valid === "1";

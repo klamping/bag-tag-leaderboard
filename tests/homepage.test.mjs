@@ -4,6 +4,14 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import HomePage from "../app/page.js";
 
+function assertLeaderboardRow(markup, { playerId, rank, playerName, eventsPlayed, seasonPoints }) {
+  assert.match(markup, new RegExp(`<tr data-testid="leaderboard-row-${playerId}">`));
+  assert.match(markup, new RegExp(`<td data-testid="leaderboard-rank-${playerId}">${rank}<\\/td>`));
+  assert.match(markup, new RegExp(`<td data-testid="leaderboard-player-${playerId}">${playerName}<\\/td>`));
+  assert.match(markup, new RegExp(`<td data-testid="leaderboard-events-played-${playerId}">${eventsPlayed}<\\/td>`));
+  assert.match(markup, new RegExp(`<td data-testid="leaderboard-season-points-${playerId}">${seasonPoints}<\\/td>`));
+}
+
 test("renders leaderboard table with required columns", () => {
   const markup = renderToStaticMarkup(HomePage());
 
@@ -40,8 +48,8 @@ test("renders mapped leaderboard rows in rank order", () => {
     })
   );
 
-  assert.match(markup, /<td>1<\/td><td>Blair<\/td><td>5<\/td><td>42<\/td>/);
-  assert.match(markup, /<td>2<\/td><td>Alex<\/td><td>4<\/td><td>38<\/td>/);
+  assertLeaderboardRow(markup, { playerId: "p2", rank: 1, playerName: "Blair", eventsPlayed: 5, seasonPoints: 42 });
+  assertLeaderboardRow(markup, { playerId: "p1", rank: 2, playerName: "Alex", eventsPlayed: 4, seasonPoints: 38 });
   assert.ok(markup.indexOf("Blair") < markup.indexOf("Alex"));
 });
 
@@ -60,8 +68,8 @@ test("uses demo rows and badge when demo=1", () => {
   assert.equal(called, false);
   assert.match(markup, /Demo Data/);
   assert.match(markup, /Casey/);
-  assert.match(markup, /<td>1<\/td><td>Blair<\/td><td>5<\/td><td>83<\/td>/);
-  assert.match(markup, /<td>3<\/td><td>Casey<\/td><td>5<\/td><td>72<\/td>/);
+  assertLeaderboardRow(markup, { playerId: "p2", rank: 1, playerName: "Blair", eventsPlayed: 5, seasonPoints: 83 });
+  assertLeaderboardRow(markup, { playerId: "p3", rank: 3, playerName: "Casey", eventsPlayed: 5, seasonPoints: 72 });
 });
 
 test("uses live loader when demo query param is absent", () => {
@@ -110,8 +118,8 @@ test("renders shared ranks for ties in non-demo mode", () => {
     })
   );
 
-  assert.match(markup, /<td>1<\/td><td>Alex<\/td><td>6<\/td><td>52<\/td>/);
-  assert.match(markup, /<td>2<\/td><td>Blair<\/td><td>6<\/td><td>46<\/td>/);
-  assert.match(markup, /<td>2<\/td><td>Casey<\/td><td>6<\/td><td>46<\/td>/);
-  assert.match(markup, /<td>4<\/td><td>Devon<\/td><td>6<\/td><td>44<\/td>/);
+  assertLeaderboardRow(markup, { playerId: "p1", rank: 1, playerName: "Alex", eventsPlayed: 6, seasonPoints: 52 });
+  assertLeaderboardRow(markup, { playerId: "p2", rank: 2, playerName: "Blair", eventsPlayed: 6, seasonPoints: 46 });
+  assertLeaderboardRow(markup, { playerId: "p3", rank: 2, playerName: "Casey", eventsPlayed: 6, seasonPoints: 46 });
+  assertLeaderboardRow(markup, { playerId: "p4", rank: 4, playerName: "Devon", eventsPlayed: 6, seasonPoints: 44 });
 });

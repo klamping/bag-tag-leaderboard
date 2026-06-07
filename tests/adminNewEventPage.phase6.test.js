@@ -45,7 +45,7 @@ test("createConfirmUdiscImportAction redirects malformed payloads with confirm e
   const formData = new FormData();
   formData.set("previewPayload", "not json");
 
-  await action({}, formData);
+  await action(formData);
 
   assert.deepEqual(redirects, [
     "/admin/events/new?confirm_error=Imported+preview+is+invalid.",
@@ -83,7 +83,7 @@ test("createConfirmUdiscImportAction preserves preview and field errors when con
   formData.set("previewPayload", JSON.stringify(preview));
   formData.set("slug", "spring-showdown-3");
 
-  await action({}, formData);
+  await action(formData);
 
   assert.equal(redirects.length, 1);
   const location = new URL(redirects[0], "https://example.test");
@@ -124,7 +124,7 @@ test("createConfirmUdiscImportAction default path confirms import and redirects 
   const formData = new FormData();
   formData.set("previewPayload", JSON.stringify(preview));
 
-  await action({}, formData);
+  await action(formData);
 
   assert.deepEqual(redirects, [
     "/admin/events/new?confirmed=1&confirmed_slug=spring-showdown-2",
@@ -175,7 +175,7 @@ test("createConfirmUdiscImportAction default path rolls back partial writes when
   const formData = new FormData();
   formData.set("previewPayload", JSON.stringify(buildPreview()));
 
-  await assert.rejects(() => action({}, formData), /point insert failed/);
+  await assert.rejects(() => action(formData), /point insert failed/);
 
   assert.deepEqual(eventsData.getEventsData(), {
     players: [{ id: "player_0001", name: "Alice Smith" }],
@@ -202,6 +202,12 @@ test("renderUdiscPreviewSection renders confirm affordance only for valid previe
 
   assert.match(validHtml, /Review Imported Players/);
   assert.match(validHtml, /Confirm Import/);
+  assert.match(validHtml, /data-testid="participant-review-form"/);
+  assert.match(validHtml, /data-testid="participant-review-row-0"/);
+  assert.match(validHtml, /data-testid="participant-review-row-1"/);
+  assert.match(validHtml, /data-testid="participant-review-starting-tag-0"/);
+  assert.match(validHtml, /data-testid="confirm-import-form"/);
+  assert.match(validHtml, /data-testid="confirm-import-slug"/);
   assert.match(validHtml, /name="slug"/);
   assert.match(validHtml, /value="spring-showdown-2"/);
   assert.match(validHtml, /Slug is already in use/);
@@ -218,6 +224,8 @@ test("renderUdiscPreviewSection renders confirm affordance only for valid previe
 
   assert.match(invalidHtml, /Review Imported Players/);
   assert.doesNotMatch(invalidHtml, /Confirm Import/);
+  assert.match(invalidHtml, /data-testid="participant-review-form"/);
+  assert.doesNotMatch(invalidHtml, /data-testid="confirm-import-form"/);
   assert.equal((invalidHtml.match(/name="previewPayload"/g) || []).length, 1);
 });
 

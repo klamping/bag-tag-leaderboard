@@ -97,7 +97,7 @@ test("reviewUdiscPreviewAction validates matched rows and carries enriched previ
   );
   formData.set("participants_0_startingTag", "8");
 
-  await action({}, formData);
+  await action(formData);
 
   assert.equal(redirects.length, 1);
   assert.match(redirects[0], /preview_valid=1/);
@@ -141,7 +141,7 @@ test("reviewUdiscPreviewAction redirects with row-level validation errors when t
     })
   );
 
-  await action({}, formData);
+  await action(formData);
 
   assert.equal(redirects.length, 1);
   assert.doesNotMatch(redirects[0], /preview_valid=1/);
@@ -184,7 +184,7 @@ test("fetchUdiscPreviewAction enriches fetched preview with initial match classi
 
   const formData = new FormData();
   formData.set("udiscUrl", "https://udisc.com/events/spring-showdown");
-  await action({}, formData);
+  await action(formData);
 
   const preview = decodePreviewFromRedirect(redirects[0]);
   assert.deepEqual(preview.participants, [

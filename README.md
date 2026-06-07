@@ -41,7 +41,7 @@ npm test
 
 ## Playwright
 
-Playwright is scaffolded for future end-to-end browser coverage and runs separately from the default Node test suite.
+Playwright runs the real browser coverage for the admin import flow and public scoreboard pages, separately from the default Node test suite.
 
 Install the browser binary:
 
@@ -60,7 +60,8 @@ npm run test:e2e:ui
 Notes:
 
 - Playwright runs against a production-style local server using `next build` and `next start`.
-- The repository currently ships with no Playwright specs in `e2e/`, so `npm run test:e2e` is configured to pass cleanly until browser tests are added.
+- The browser suite includes specs for admin login and the multi-event admin import flow, including assertions against the public event scoreboard and season leaderboard.
+- The Playwright-only seams live behind `PLAYWRIGHT_TEST_MODE=true` and the `x-playwright-test-secret` header, which allow fixture-backed UDisc imports and the `/api/test/reset` state reset used by `e2e/`.
 - `npm test` still runs the existing `node:test` suite.
 
 ## Admin Login
