@@ -42,18 +42,20 @@ function loadDemoEventScoreboard({ slug }) {
 }
 
 function renderScoreRow(row) {
+  const rowId = row.playerId;
+
   return createElement(
     "tr",
-    { key: row.playerId },
-    createElement("td", null, row.playerName),
-    createElement("td", null, row.startingTag),
-    createElement("td", null, row.attendance),
-    createElement("td", null, row.eventResult),
-    createElement("td", null, row.placement),
-    createElement("td", null, row.startingTagBonus),
-    createElement("td", null, row.tagOneBonus),
-    createElement("td", null, row.beatYourTagBonus),
-    createElement("td", null, row.eventTotal)
+    { key: rowId, "data-testid": `event-scoreboard-row-${rowId}` },
+    createElement("td", { "data-testid": `event-scoreboard-player-${rowId}` }, row.playerName),
+    createElement("td", { "data-testid": `event-scoreboard-starting-tag-${rowId}` }, row.startingTag),
+    createElement("td", { "data-testid": `event-scoreboard-attendance-${rowId}` }, row.attendance),
+    createElement("td", { "data-testid": `event-scoreboard-event-result-${rowId}` }, row.eventResult),
+    createElement("td", { "data-testid": `event-scoreboard-placement-${rowId}` }, row.placement),
+    createElement("td", { "data-testid": `event-scoreboard-starting-tag-bonus-${rowId}` }, row.startingTagBonus),
+    createElement("td", { "data-testid": `event-scoreboard-tag-one-bonus-${rowId}` }, row.tagOneBonus),
+    createElement("td", { "data-testid": `event-scoreboard-beat-your-tag-bonus-${rowId}` }, row.beatYourTagBonus),
+    createElement("td", { "data-testid": `event-scoreboard-total-${rowId}` }, row.eventTotal)
   );
 }
 

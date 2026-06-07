@@ -19,34 +19,50 @@ export function createAdminLoginAction({
   nodeEnv = process.env.NODE_ENV,
 } = {}) {
   return async function loginAction(formData) {
-    const submittedSecret = formData.get("secret");
-    const candidateSecret = typeof submittedSecret === "string" ? submittedSecret : "";
+    "use server";
 
-    if (!verifySecret(candidateSecret)) {
-      throw new Error("Invalid admin credentials");
-    }
-
-    getCookiesStore().set(
-      ADMIN_SESSION_COOKIE,
-      createSessionToken(),
-      getCookieOptions(nodeEnv)
-    );
-
-    redirectTo("/admin/events/new");
+    return submitAdminLogin(formData, {
+      getCookiesStore,
+      redirectTo,
+      createSessionToken,
+      getCookieOptions,
+      verifySecret,
+      nodeEnv,
+    });
   };
+}
+
+async function submitAdminLogin(
+  formData,
+  {
+    getCookiesStore = cookies,
+    redirectTo = redirect,
+    createSessionToken = createAdminSessionToken,
+    getCookieOptions = getAdminCookieOptions,
+    verifySecret = verifyAdminSecret,
+    nodeEnv = process.env.NODE_ENV,
+  } = {}
+) {
+  const submittedSecret = formData.get("secret");
+  const candidateSecret = typeof submittedSecret === "string" ? submittedSecret : "";
+
+  if (!verifySecret(candidateSecret)) {
+    throw new Error("Invalid admin credentials");
+  }
+
+  getCookiesStore().set(
+    ADMIN_SESSION_COOKIE,
+    createSessionToken(),
+    getCookieOptions(nodeEnv)
+  );
+
+  redirectTo("/admin/events/new");
 }
 
 export async function adminLoginAction(formData) {
   "use server";
 
-  return createAdminLoginAction({
-    getCookiesStore: cookies,
-    redirectTo: redirect,
-    createSessionToken: createAdminSessionToken,
-    getCookieOptions: getAdminCookieOptions,
-    verifySecret: verifyAdminSecret,
-    nodeEnv: process.env.NODE_ENV,
-  })(formData);
+  return submitAdminLogin(formData);
 }
 
 export default function AdminLoginPage() {

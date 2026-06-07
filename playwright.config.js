@@ -11,6 +11,12 @@ module.exports = defineConfig({
   },
   webServer: {
     command: "npm run build && npm run start",
+    env: {
+      ...process.env,
+      ADMIN_SHARED_SECRET: "playwright-admin-secret",
+      PLAYWRIGHT_TEST_MODE: "true",
+      PLAYWRIGHT_TEST_SECRET: "playwright-reset-secret",
+    },
     url: "http://127.0.0.1:3000",
     reuseExistingServer: false,
     timeout: 120000,

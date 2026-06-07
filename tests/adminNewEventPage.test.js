@@ -31,7 +31,7 @@ test("draftEventAction enforces admin guard and forwards form payload", async ()
   formData.set("isMajor", "true");
   formData.set("notes", " Bring towels ");
 
-  const result = await action({}, formData);
+  const result = await action(formData);
 
   assert.equal(requireAdminCalls, 1);
   assert.equal(createDraftCalls.length, 1);
@@ -68,10 +68,10 @@ test("draftEventAction default persistence path creates and dedupes drafts", asy
   firstFormData.set("isMajor", "false");
   firstFormData.set("notes", "Bring water");
 
-  const created = await action({}, firstFormData);
+  const created = await action(firstFormData);
   assert.equal(created, undefined);
 
-  const duplicate = await action({}, firstFormData);
+  const duplicate = await action(firstFormData);
   assert.deepEqual(duplicate, undefined);
   assert.deepEqual(redirects, [
     "/admin/events/new?created=1",
@@ -98,7 +98,7 @@ test("draftEventAction redirects to created flag on successful create", async ()
   formData.set("isMajor", "false");
   formData.set("notes", "");
 
-  const result = await action({}, formData);
+  const result = await action(formData);
 
   assert.deepEqual(redirects, ["/admin/events/new?created=1"]);
   assert.equal(result, undefined);
@@ -130,7 +130,7 @@ test("draftEventAction prevents slug collisions from non-draft events", async ()
   formData.set("isMajor", "false");
   formData.set("notes", "");
 
-  const result = await action({}, formData);
+  const result = await action(formData);
 
   assert.equal(result, undefined);
   assert.equal(insertCalls, 0);
@@ -157,7 +157,7 @@ test("draftEventAction default path blocks slug collisions with public events", 
   formData.set("isMajor", "false");
   formData.set("notes", "");
 
-  const result = await action({}, formData);
+  const result = await action(formData);
 
   assert.equal(result, undefined);
   assert.deepEqual(redirects, ["/admin/events/new?error_slug=Slug+is+already+in+use"]);
@@ -186,7 +186,7 @@ test("draftEventAction redirects with fieldErrors in query params", async () => 
   formData.set("isMajor", "false");
   formData.set("notes", "");
 
-  const result = await action({}, formData);
+  const result = await action(formData);
 
   assert.deepEqual(redirects, ["/admin/events/new?error_date=Date+is+invalid"]);
   assert.equal(result, undefined);
@@ -236,7 +236,7 @@ test("fetchUdiscPreviewAction enforces auth and redirects with encoded preview",
 
   const formData = new FormData();
   formData.set("udiscUrl", " https://udisc.com/events/spring-showdown ");
-  await action({}, formData);
+  await action(formData);
 
   assert.equal(requireAdminCalls, 1);
   assert.deepEqual(fetchCalls, [{ leaderboardUrl: "https://udisc.com/events/spring-showdown" }]);
@@ -260,7 +260,7 @@ test("fetchUdiscPreviewAction maps client errors to safe messages", async () => 
 
   const formData = new FormData();
   formData.set("udiscUrl", "https://udisc.com/events/missing");
-  await action({}, formData);
+  await action(formData);
 
   assert.equal(redirects[0], "/admin/events/new?udisc_error=UDisc+event+not+found.");
 });
@@ -282,7 +282,7 @@ test("fetchUdiscPreviewAction maps validation and upstream format errors", async
 
   const validationFormData = new FormData();
   validationFormData.set("udiscUrl", "not-a-url");
-  await validationAction({}, validationFormData);
+  await validationAction(validationFormData);
 
   assert.equal(
     validationRedirects[0],
@@ -303,7 +303,7 @@ test("fetchUdiscPreviewAction maps validation and upstream format errors", async
 
   const upstreamFormData = new FormData();
   upstreamFormData.set("udiscUrl", "https://udisc.com/events/spring-showdown");
-  await upstreamAction({}, upstreamFormData);
+  await upstreamAction(upstreamFormData);
 
   assert.equal(
     upstreamRedirects[0],
@@ -324,12 +324,31 @@ test("fetchUdiscPreviewAction maps preview transformation failures to safe messa
 
   const formData = new FormData();
   formData.set("udiscUrl", "https://udisc.com/events/spring-showdown");
-  await action({}, formData);
+  await action(formData);
 
   assert.equal(
     redirects[0],
     "/admin/events/new?udisc_error=UDisc+leaderboard+data+could+not+be+processed.+Please+try+again+later."
   );
+});
+
+test("fetchUdiscPreviewAction does not swallow redirect throws after successful preview generation", async () => {
+  const { createFetchUdiscPreviewAction } = await import("../app/admin/events/new/page.js");
+  const redirectSignal = new Error("NEXT_REDIRECT");
+
+  const action = createFetchUdiscPreviewAction({
+    requireAdminAccess: () => {},
+    fetchUdiscEventAdapter: async () => ({ name: "Spring Showdown", startDate: "2026-04-12", participants: [] }),
+    mapUdiscEventToDraftPreviewAdapter: () => ({ ok: true, preview: { event: { name: "Spring Showdown" }, participants: [] } }),
+    redirectTo: () => {
+      throw redirectSignal;
+    },
+  });
+
+  const formData = new FormData();
+  formData.set("udiscUrl", "https://udisc.com/events/spring-showdown");
+
+  await assert.rejects(() => action(formData), (error) => error === redirectSignal);
 });
 
 test("AdminNewEventPage source uses URL-based UDisc preview form fields", async () => {

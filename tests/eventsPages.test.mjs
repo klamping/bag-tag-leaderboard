@@ -5,6 +5,33 @@ import { renderToStaticMarkup } from "react-dom/server";
 import EventsPage from "../app/events/page.js";
 import EventScoreboardPage from "../app/events/[slug]/page.js";
 
+function assertEventScoreboardRow(
+  markup,
+  {
+    playerId,
+    playerName,
+    startingTag,
+    attendance,
+    eventResult,
+    placement,
+    startingTagBonus,
+    tagOneBonus,
+    beatYourTagBonus,
+    eventTotal,
+  }
+) {
+  assert.match(markup, new RegExp(`<tr data-testid="event-scoreboard-row-${playerId}">`));
+  assert.match(markup, new RegExp(`<td data-testid="event-scoreboard-player-${playerId}">${playerName}<\\/td>`));
+  assert.match(markup, new RegExp(`<td data-testid="event-scoreboard-starting-tag-${playerId}">${startingTag}<\\/td>`));
+  assert.match(markup, new RegExp(`<td data-testid="event-scoreboard-attendance-${playerId}">${attendance}<\\/td>`));
+  assert.match(markup, new RegExp(`<td data-testid="event-scoreboard-event-result-${playerId}">${eventResult}<\\/td>`));
+  assert.match(markup, new RegExp(`<td data-testid="event-scoreboard-placement-${playerId}">${placement}<\\/td>`));
+  assert.match(markup, new RegExp(`<td data-testid="event-scoreboard-starting-tag-bonus-${playerId}">${startingTagBonus}<\\/td>`));
+  assert.match(markup, new RegExp(`<td data-testid="event-scoreboard-tag-one-bonus-${playerId}">${tagOneBonus}<\\/td>`));
+  assert.match(markup, new RegExp(`<td data-testid="event-scoreboard-beat-your-tag-bonus-${playerId}">${beatYourTagBonus}<\\/td>`));
+  assert.match(markup, new RegExp(`<td data-testid="event-scoreboard-total-${playerId}">${eventTotal}<\\/td>`));
+}
+
 test("/events renders heading and links to event detail pages", () => {
   const markup = renderToStaticMarkup(
     EventsPage({
@@ -85,7 +112,18 @@ test("/events/:slug renders scoreboard columns and rows", () => {
   assert.match(markup, /<th scope="col">Tag #1 Bonus<\/th>/);
   assert.match(markup, /<th scope="col">Beat Your Tag Bonus<\/th>/);
   assert.match(markup, /<th scope="col">Event Total<\/th>/);
-  assert.match(markup, /<td>Ada<\/td><td>4<\/td><td>2<\/td><td>1<\/td><td>8<\/td><td>2<\/td><td>0<\/td><td>3<\/td><td>15<\/td>/);
+  assertEventScoreboardRow(markup, {
+    playerId: "p1",
+    playerName: "Ada",
+    startingTag: 4,
+    attendance: 2,
+    eventResult: 1,
+    placement: 8,
+    startingTagBonus: 2,
+    tagOneBonus: 0,
+    beatYourTagBonus: 3,
+    eventTotal: 15,
+  });
 });
 
 test("/events/:slug renders empty scoreboard state", () => {
@@ -151,6 +189,17 @@ test("/events/:slug uses demo fixtures when demo=1", () => {
   );
 
   assert.match(markup, /<h1>initial-no-tags<\/h1>/);
-  assert.match(markup, /<td>Alex<\/td>/);
+  assertEventScoreboardRow(markup, {
+    playerId: "p1",
+    playerName: "Alex",
+    startingTag: 1,
+    attendance: 2,
+    eventResult: 1,
+    placement: 8,
+    startingTagBonus: 0,
+    tagOneBonus: 0,
+    beatYourTagBonus: 0,
+    eventTotal: 10,
+  });
   assert.doesNotMatch(markup, /<td><\/td>/);
 });

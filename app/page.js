@@ -1,16 +1,20 @@
 import leaderboardQuery from "../lib/leaderboardQuery.js";
 import { createElement } from "react";
 import demoLeaderboard from "../lib/demoLeaderboard.js";
+import eventsDataModule from "../lib/eventsData.js";
 
 const { getSeasonLeaderboardRows } = leaderboardQuery;
 const { scoreDemoSeason } = demoLeaderboard;
+const { getEventsData } = eventsDataModule;
 
 function loadLeaderboardRows() {
+  const { players, events, eventResults, eventPoints } = getEventsData();
+
   return getSeasonLeaderboardRows({
-    players: [],
-    events: [],
-    eventResults: [],
-    eventPoints: [],
+    players,
+    events,
+    eventResults,
+    eventPoints,
   });
 }
 
@@ -23,13 +27,15 @@ function renderEmptyRow() {
 }
 
 function renderLeaderboardRow(row, rank) {
+  const rowId = row.playerId;
+
   return createElement(
     "tr",
-    { key: row.playerId },
-    createElement("td", null, rank),
-    createElement("td", null, row.playerName),
-    createElement("td", null, row.eventsPlayed),
-    createElement("td", null, row.seasonPoints)
+    { key: rowId, "data-testid": `leaderboard-row-${rowId}` },
+    createElement("td", { "data-testid": `leaderboard-rank-${rowId}` }, rank),
+    createElement("td", { "data-testid": `leaderboard-player-${rowId}` }, row.playerName),
+    createElement("td", { "data-testid": `leaderboard-events-played-${rowId}` }, row.eventsPlayed),
+    createElement("td", { "data-testid": `leaderboard-season-points-${rowId}` }, row.seasonPoints)
   );
 }
 

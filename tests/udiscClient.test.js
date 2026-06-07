@@ -46,6 +46,70 @@ test("fetchUdiscEventFromUrl accepts www host and trailing slash", async () => {
   });
 });
 
+test("fetchUdiscEventFromUrl returns the local Playwright fixture before network fetch", async () => {
+  const result = await fetchUdiscEventFromUrl({
+    leaderboardUrl: "https://udisc.com/events/admin-scoreboard-spring-fling/leaderboard",
+    fetchImpl: async () => {
+      throw new Error("fetch should not be called");
+    },
+    env: {
+      PLAYWRIGHT_TEST_MODE: "true",
+    },
+  });
+
+  assert.deepEqual(result, {
+    name: "Admin Scoreboard Spring Fling",
+    date: "2026-04-18",
+    slug: "admin-scoreboard-spring-fling",
+    isMajor: false,
+    participants: [
+      { playerName: "Alice Example", externalPlayerId: "fixture-player-1", finishPlace: 1 },
+      { playerName: "Bob Example", externalPlayerId: "fixture-player-2", finishPlace: 2 },
+      { playerName: "Casey Example", externalPlayerId: "fixture-player-3", finishPlace: 3 },
+      { playerName: "Dana Example", externalPlayerId: "fixture-player-4", finishPlace: 4 },
+    ],
+    playerIdByName: {
+      "Alice Example": "p1",
+      "Bob Example": "p2",
+      "Casey Example": "p3",
+      "Dana Example": "p4",
+    },
+    startingTagByName: {},
+  });
+});
+
+test("fetchUdiscEventFromUrl resolves local Playwright fixtures for valid url variants", async () => {
+  const result = await fetchUdiscEventFromUrl({
+    leaderboardUrl: "https://www.udisc.com/events/admin-scoreboard-spring-fling/leaderboard/?round=final",
+    fetchImpl: async () => {
+      throw new Error("fetch should not be called");
+    },
+    env: {
+      PLAYWRIGHT_TEST_MODE: "true",
+    },
+  });
+
+  assert.deepEqual(result, {
+    name: "Admin Scoreboard Spring Fling",
+    date: "2026-04-18",
+    slug: "admin-scoreboard-spring-fling",
+    isMajor: false,
+    participants: [
+      { playerName: "Alice Example", externalPlayerId: "fixture-player-1", finishPlace: 1 },
+      { playerName: "Bob Example", externalPlayerId: "fixture-player-2", finishPlace: 2 },
+      { playerName: "Casey Example", externalPlayerId: "fixture-player-3", finishPlace: 3 },
+      { playerName: "Dana Example", externalPlayerId: "fixture-player-4", finishPlace: 4 },
+    ],
+    playerIdByName: {
+      "Alice Example": "p1",
+      "Bob Example": "p2",
+      "Casey Example": "p3",
+      "Dana Example": "p4",
+    },
+    startingTagByName: {},
+  });
+});
+
 test("fetchUdiscEventFromUrl preserves query params in outbound request url", async () => {
   const fetchCalls = [];
 
@@ -302,6 +366,24 @@ test("fetchUdiscEventFromUrl uses html fallback when structured payload is incom
     name: "Fallback Complete Event",
     date: "2026-07-10",
     participants: [{ playerName: "Fallback Player", externalPlayerId: "f-1", finishPlace: 1 }],
+  });
+});
+
+test("fetchUdiscEventFromUrl skips incomplete structured candidates and continues to later valid candidates", async () => {
+  const result = await fetchUdiscEventFromUrl({
+    leaderboardUrl: "https://udisc.com/events/later-valid-candidate/leaderboard",
+    fetchImpl: async () => ({
+      ok: true,
+      text: async () =>
+        '<html><script type="application/ld+json">{"second":{"name":"Later Valid Event","startDate":"2026-07-12","url":"https://udisc.com/events/later-valid-candidate/leaderboard","competitor":[{"name":"Valid Player","identifier":"valid-1","position":1}]},"first":{"competitor":[{"name":"Incomplete Player","identifier":"inc-1","position":1}]}}</script></html>',
+    }),
+  });
+
+  assert.deepEqual(result, {
+    name: "Later Valid Event",
+    date: "2026-07-12",
+    slug: "later-valid-candidate",
+    participants: [{ playerName: "Valid Player", externalPlayerId: "valid-1", finishPlace: 1 }],
   });
 });
 
