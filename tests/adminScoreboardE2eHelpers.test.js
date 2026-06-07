@@ -32,7 +32,7 @@ test("loginAsAdmin waits for the authenticated admin page after submitting the l
     ["goto", "/admin/login"],
     ["fill", "Shared secret", "playwright-admin-secret"],
     ["click", "button", { name: "Sign in" }],
-    ["waitForURL", /\/admin\/events\/new$/],
+    ["waitForURL", /\/admin\/events$/],
   ]);
 });
 

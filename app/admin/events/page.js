@@ -23,6 +23,7 @@ function renderEventRow(row) {
     "tr",
     { key: row.id },
     createElement("td", null, row.name),
+    createElement("td", null, row.slug),
     createElement("td", null, row.date),
     createElement("td", null, row.status),
     createElement(
@@ -44,6 +45,7 @@ function renderEventTable(rows) {
         "tr",
         null,
         createElement("th", { scope: "col" }, "Name"),
+        createElement("th", { scope: "col" }, "Slug"),
         createElement("th", { scope: "col" }, "Date"),
         createElement("th", { scope: "col" }, "Status"),
         createElement("th", { scope: "col" }, "Actions")

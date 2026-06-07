@@ -31,7 +31,7 @@ async function loginAsAdmin({ page }) {
   await page.goto("/admin/login");
   await page.getByLabel("Shared secret").fill(PLAYWRIGHT_ADMIN_SECRET);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await page.waitForURL(/\/admin\/events\/new$/);
+  await page.waitForURL(/\/admin\/events$/);
 }
 
 async function fillMatchedPlayerStartingTags({ page, fixture }) {

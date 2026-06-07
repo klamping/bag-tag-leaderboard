@@ -42,6 +42,8 @@ test("AdminEventsPage enforces admin access and renders event rows with edit lin
   assert.match(html, /href="\/admin\/events\/new"/);
   assert.match(html, /Draft Night/);
   assert.match(html, /Spring Showdown/);
+  assert.match(html, />draft-night</);
+  assert.match(html, />spring-showdown</);
   assert.match(html, /2026-05-01/);
   assert.match(html, /2026-04-12/);
   assert.match(html, />draft</);
@@ -101,6 +103,8 @@ test("AdminEventsPage default path renders draft and confirmed events from the a
 
   assert.match(html, /Draft Night/);
   assert.match(html, /Spring Showdown/);
+  assert.match(html, />draft-night</);
+  assert.match(html, />spring-showdown</);
   assert.match(html, /href="\/admin\/events\/draft-night\/edit"/);
   assert.match(html, /href="\/admin\/events\/spring-showdown\/edit"/);
 });
