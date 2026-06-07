@@ -107,12 +107,14 @@ function parseReviewErrors(value) {
   return parseJsonObject(value) || {};
 }
 
-function applyPreviewSlug(preview, slugValue) {
+function applySubmittedPreviewMetadata(preview, formData) {
   return {
     ...preview,
     event: {
       ...preview.event,
-      slug: String(slugValue || preview.event?.slug || ""),
+      name: String(formData.get("name") || preview.event?.name || ""),
+      slug: String(formData.get("slug") || preview.event?.slug || ""),
+      date: String(formData.get("date") || preview.event?.date || ""),
     },
   };
 }
@@ -415,10 +417,10 @@ async function submitConfirmUdiscImport(
     return;
   }
 
-  const previewWithSlug = applyPreviewSlug(preview, formData.get("slug"));
+  const previewWithSubmittedMetadata = applySubmittedPreviewMetadata(preview, formData);
 
   const result = await confirmImportedEventAdapter({
-    preview: previewWithSlug,
+    preview: previewWithSubmittedMetadata,
     findExistingEventBySlug: async (slug) => {
       const [draftMatch, confirmedMatch] = await Promise.all([
         findDraftEventBySlugAdapter(slug),
@@ -440,7 +442,7 @@ async function submitConfirmUdiscImport(
   if (!result?.ok) {
     redirectTo(
       buildPreviewRedirectUrl({
-        preview: previewWithSlug,
+        preview: previewWithSubmittedMetadata,
         previewValid: true,
         reviewErrors: result?.fieldErrors,
       })

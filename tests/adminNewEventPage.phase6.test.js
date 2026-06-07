@@ -60,7 +60,9 @@ test("createConfirmUdiscImportAction preserves preview and field errors when con
     ...preview,
     event: {
       ...preview.event,
+      name: "Spring Showdown Finals",
       slug: "spring-showdown-3",
+      date: "2026-04-19",
     },
   };
   const redirects = [];
@@ -81,7 +83,9 @@ test("createConfirmUdiscImportAction preserves preview and field errors when con
 
   const formData = new FormData();
   formData.set("previewPayload", JSON.stringify(preview));
+  formData.set("name", "Spring Showdown Finals");
   formData.set("slug", "spring-showdown-3");
+  formData.set("date", "2026-04-19");
 
   await action(formData);
 
