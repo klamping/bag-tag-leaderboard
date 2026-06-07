@@ -108,13 +108,17 @@ function parseReviewErrors(value) {
 }
 
 function applySubmittedPreviewMetadata(preview, formData) {
+  const submittedName = formData.get("name");
+  const submittedSlug = formData.get("slug");
+  const submittedDate = formData.get("date");
+
   return {
     ...preview,
     event: {
       ...preview.event,
-      name: String(formData.get("name") || preview.event?.name || ""),
-      slug: String(formData.get("slug") || preview.event?.slug || ""),
-      date: String(formData.get("date") || preview.event?.date || ""),
+      name: submittedName === null ? String(preview.event?.name || "") : String(submittedName),
+      slug: submittedSlug === null ? String(preview.event?.slug || "") : String(submittedSlug),
+      date: submittedDate === null ? String(preview.event?.date || "") : String(submittedDate),
     },
   };
 }

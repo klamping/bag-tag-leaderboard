@@ -52,7 +52,7 @@ test("createConfirmUdiscImportAction redirects malformed payloads with confirm e
   ]);
 });
 
-test("createConfirmUdiscImportAction preserves preview and field errors when confirm fails", async () => {
+test("createConfirmUdiscImportAction preserves submitted metadata and field errors when confirm fails", async () => {
   const { createConfirmUdiscImportAction } = await import("../app/admin/events/new/page.js");
 
   const preview = buildPreview();
@@ -60,7 +60,7 @@ test("createConfirmUdiscImportAction preserves preview and field errors when con
     ...preview,
     event: {
       ...preview.event,
-      name: "Spring Showdown Finals",
+      name: "",
       slug: "spring-showdown-3",
       date: "2026-04-19",
     },
@@ -83,7 +83,7 @@ test("createConfirmUdiscImportAction preserves preview and field errors when con
 
   const formData = new FormData();
   formData.set("previewPayload", JSON.stringify(preview));
-  formData.set("name", "Spring Showdown Finals");
+  formData.set("name", "");
   formData.set("slug", "spring-showdown-3");
   formData.set("date", "2026-04-19");
 
