@@ -211,9 +211,15 @@ test("renderUdiscPreviewSection renders confirm affordance only for valid previe
   assert.match(validHtml, /data-testid="participant-review-row-1"/);
   assert.match(validHtml, /data-testid="participant-review-starting-tag-0"/);
   assert.match(validHtml, /data-testid="confirm-import-form"/);
+  assert.match(validHtml, /data-testid="confirm-import-name"/);
+  assert.match(validHtml, /name="name"/);
+  assert.match(validHtml, /value="Spring Showdown"/);
   assert.match(validHtml, /data-testid="confirm-import-slug"/);
   assert.match(validHtml, /name="slug"/);
   assert.match(validHtml, /value="spring-showdown-2"/);
+  assert.match(validHtml, /data-testid="confirm-import-date"/);
+  assert.match(validHtml, /name="date"/);
+  assert.match(validHtml, /value="2026-04-12"/);
   assert.match(validHtml, /Slug is already in use/);
   assert.equal((validHtml.match(/name="previewPayload"/g) || []).length, 2);
 

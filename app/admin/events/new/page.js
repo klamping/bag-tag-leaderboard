@@ -549,6 +549,15 @@ export function renderUdiscPreviewSection({
             name: "previewPayload",
             value: JSON.stringify(preview),
           }),
+          createElement("label", { htmlFor: "confirm_name" }, "Name"),
+          createElement("input", {
+            id: "confirm_name",
+            name: "name",
+            type: "text",
+            required: true,
+            defaultValue: preview.event?.name || "",
+            "data-testid": "confirm-import-name",
+          }),
           createElement("label", { htmlFor: "confirm_slug" }, "Slug"),
           createElement("input", {
             id: "confirm_slug",
@@ -557,6 +566,15 @@ export function renderUdiscPreviewSection({
             required: true,
             defaultValue: preview.event?.slug || "",
             "data-testid": "confirm-import-slug",
+          }),
+          createElement("label", { htmlFor: "confirm_date" }, "Date"),
+          createElement("input", {
+            id: "confirm_date",
+            name: "date",
+            type: "date",
+            required: true,
+            defaultValue: preview.event?.date || "",
+            "data-testid": "confirm-import-date",
           }),
           createElement("p", null, "This import is ready to confirm."),
           createElement("button", { type: "submit" }, "Confirm Import")
