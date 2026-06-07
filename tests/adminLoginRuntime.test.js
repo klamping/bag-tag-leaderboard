@@ -1,6 +1,26 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { spawn } = require("node:child_process");
+const net = require("node:net");
+
+async function getAvailablePort() {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+
+    server.once("error", reject);
+    server.listen(0, () => {
+      const { port } = server.address();
+      server.close((error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        resolve(port);
+      });
+    });
+  });
+}
 
 async function waitForServer(url, { attempts = 120, delayMs = 500 } = {}) {
   let lastError = null;
@@ -50,7 +70,7 @@ function startDevServer(port) {
 }
 
 test("admin login form submits successfully at runtime", async () => {
-  const port = 3101;
+  const port = await getAvailablePort();
   const { child, getOutput } = startDevServer(port);
 
   try {
@@ -71,7 +91,7 @@ test("admin login form submits successfully at runtime", async () => {
     });
 
     assert.equal(submitResponse.status, 303, await submitResponse.text());
-    assert.equal(submitResponse.headers.get("location"), "/admin/events/new");
+    assert.equal(submitResponse.headers.get("location"), "/admin/events");
   } finally {
     if (child.exitCode === null) {
       child.kill("SIGTERM");

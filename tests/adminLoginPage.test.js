@@ -53,7 +53,7 @@ test("loginAction sets session cookie and redirects on valid shared secret", asy
   assert.deepEqual(cookieCalls, [
     ["admin_session", "signed-token", { secure: true, httpOnly: true, maxAge: 1800 }],
   ]);
-  assert.equal(redirectedTo, "/admin/events/new");
+  assert.equal(redirectedTo, "/admin/events");
 });
 
 test("AdminLoginPage wires the form to the exported top-level action", async () => {

@@ -56,7 +56,7 @@ async function submitAdminLogin(
     getCookieOptions(nodeEnv)
   );
 
-  redirectTo("/admin/events/new");
+  redirectTo("/admin/events");
 }
 
 export async function adminLoginAction(formData) {
