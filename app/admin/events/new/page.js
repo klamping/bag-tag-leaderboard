@@ -228,7 +228,7 @@ async function draftEventAction(formData) {
 export async function adminDraftEventAction(formData) {
   "use server";
 
-  return createAdminDraftEventAction()(formData);
+  return submitAdminDraftEvent(formData);
 }
 
 export function createFetchUdiscPreviewAction({
@@ -350,7 +350,7 @@ async function submitReviewUdiscPreview(
 export async function reviewUdiscPreviewAction(formData) {
   "use server";
 
-  return createReviewUdiscPreviewAction()(formData);
+  return submitReviewUdiscPreview(formData);
 }
 
 export function createConfirmUdiscImportAction({
