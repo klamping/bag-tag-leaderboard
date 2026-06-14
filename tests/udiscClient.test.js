@@ -46,67 +46,24 @@ test("fetchUdiscEventFromUrl accepts www host and trailing slash", async () => {
   });
 });
 
-test("fetchUdiscEventFromUrl returns the local Playwright fixture before network fetch", async () => {
+test("fetchUdiscEventFromUrl still uses the provided fetch implementation when PLAYWRIGHT_TEST_MODE is set", async () => {
   const result = await fetchUdiscEventFromUrl({
     leaderboardUrl: "https://udisc.com/events/admin-scoreboard-spring-fling/leaderboard",
-    fetchImpl: async () => {
-      throw new Error("fetch should not be called");
-    },
+    fetchImpl: async () => ({
+      ok: true,
+      text: async () =>
+        '<script type="application/ld+json">{"name":"Spring Fling","startDate":"2026-04-18","url":"https://udisc.com/events/admin-scoreboard-spring-fling/leaderboard","competitor":[{"name":"Fetched Player","identifier":"1","position":1}]}</script>',
+    }),
     env: {
       PLAYWRIGHT_TEST_MODE: "true",
     },
   });
 
   assert.deepEqual(result, {
-    name: "Admin Scoreboard Spring Fling",
+    name: "Spring Fling",
     date: "2026-04-18",
     slug: "admin-scoreboard-spring-fling",
-    isMajor: false,
-    participants: [
-      { playerName: "Alice Example", externalPlayerId: "fixture-player-1", finishPlace: 1 },
-      { playerName: "Bob Example", externalPlayerId: "fixture-player-2", finishPlace: 2 },
-      { playerName: "Casey Example", externalPlayerId: "fixture-player-3", finishPlace: 3 },
-      { playerName: "Dana Example", externalPlayerId: "fixture-player-4", finishPlace: 4 },
-    ],
-    playerIdByName: {
-      "Alice Example": "p1",
-      "Bob Example": "p2",
-      "Casey Example": "p3",
-      "Dana Example": "p4",
-    },
-    startingTagByName: {},
-  });
-});
-
-test("fetchUdiscEventFromUrl resolves local Playwright fixtures for valid url variants", async () => {
-  const result = await fetchUdiscEventFromUrl({
-    leaderboardUrl: "https://www.udisc.com/events/admin-scoreboard-spring-fling/leaderboard/?round=final",
-    fetchImpl: async () => {
-      throw new Error("fetch should not be called");
-    },
-    env: {
-      PLAYWRIGHT_TEST_MODE: "true",
-    },
-  });
-
-  assert.deepEqual(result, {
-    name: "Admin Scoreboard Spring Fling",
-    date: "2026-04-18",
-    slug: "admin-scoreboard-spring-fling",
-    isMajor: false,
-    participants: [
-      { playerName: "Alice Example", externalPlayerId: "fixture-player-1", finishPlace: 1 },
-      { playerName: "Bob Example", externalPlayerId: "fixture-player-2", finishPlace: 2 },
-      { playerName: "Casey Example", externalPlayerId: "fixture-player-3", finishPlace: 3 },
-      { playerName: "Dana Example", externalPlayerId: "fixture-player-4", finishPlace: 4 },
-    ],
-    playerIdByName: {
-      "Alice Example": "p1",
-      "Bob Example": "p2",
-      "Casey Example": "p3",
-      "Dana Example": "p4",
-    },
-    startingTagByName: {},
+    participants: [{ playerName: "Fetched Player", externalPlayerId: "1", finishPlace: 1 }],
   });
 });
 
@@ -188,17 +145,18 @@ test("fetchUdiscEventFromUrl maps fetch exceptions to NETWORK_ERROR", async () =
   );
 });
 
-test("fetchUdiscEventFromUrl does not passthrough unknown typed errors", async () => {
+test("fetchUdiscEventFromUrl preserves runtime failures after fetch succeeds", async () => {
   await assert.rejects(
     fetchUdiscEventFromUrl({
       leaderboardUrl: "https://udisc.com/events/demo/leaderboard",
-      fetchImpl: async () => {
-        const error = new Error("custom");
-        error.type = "SOME_OTHER_ERROR";
-        throw error;
-      },
+      fetchImpl: async () => ({
+        ok: true,
+        text: async () => {
+          throw new Error("text failed");
+        },
+      }),
     }),
-    (error) => error.type === "NETWORK_ERROR"
+    /text failed/
   );
 });
 
@@ -402,5 +360,25 @@ test("fetchUdiscEventFromUrl parses assignment-wrapped JSON without trailing sem
     date: "2026-07-11",
     slug: "no-semicolon-event",
     participants: [{ playerName: "Semicolonless", externalPlayerId: "ns-1", finishPlace: 1 }],
+  });
+});
+
+test("fetchUdiscEventFromUrl normalizes explicit DNF rows from structured payloads", async () => {
+  const result = await fetchUdiscEventFromUrl({
+    leaderboardUrl: "https://udisc.com/events/dnf-event/leaderboard",
+    fetchImpl: async () => ({
+      ok: true,
+      text: async () =>
+        '<script type="application/ld+json">{"name":"DNF Event","startDate":"2026-07-15","competitor":[{"name":"Finished Player","identifier":"p-1","position":1},{"name":"DNF Player","identifier":"p-2","position":"DNF"}]}</script>',
+    }),
+  });
+
+  assert.deepEqual(result, {
+    name: "DNF Event",
+    date: "2026-07-15",
+    participants: [
+      { playerName: "Finished Player", externalPlayerId: "p-1", finishPlace: 1 },
+      { playerName: "DNF Player", externalPlayerId: "p-2", finishPlace: null, didNotFinish: true },
+    ],
   });
 });

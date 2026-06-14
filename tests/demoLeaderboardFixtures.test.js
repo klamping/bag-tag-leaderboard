@@ -27,7 +27,7 @@ test("regression: per-event outputs map exactly to scored fixture breakdowns", (
   assert.deepEqual(scored.scoredEvents[1].rows.map((row) => row.eventTotal), [14, 16, 10, 11, 5, 4, 2]);
   assert.deepEqual(scored.scoredEvents[2].rows.map((row) => row.eventTotal), [30, 30, 26, 20, 10, 8, 4]);
   assert.deepEqual(scored.scoredEvents[3].rows.map((row) => row.eventTotal), [18, 13, 11, 9, 5, 4, 2]);
-  assert.deepEqual(scored.scoredEvents[4].rows.map((row) => row.eventTotal), [18, 14, 11, 10, 11, 4, 3, 2]);
+  assert.deepEqual(scored.scoredEvents[4].rows.map((row) => row.eventTotal), [18, 14, 11, 10, 11, 3, 2, 2]);
 });
 
 test("regression: season aggregate rows are derived from fixture scoring", () => {
@@ -41,8 +41,8 @@ test("regression: season aggregate rows are derived from fixture scoring", () =>
     { playerId: "p5", playerName: "Elliot", eventsPlayed: 5, seasonPoints: 34 },
     { playerId: "p6", playerName: "Frankie", eventsPlayed: 4, seasonPoints: 19 },
     { playerId: "p7", playerName: "Gray", eventsPlayed: 4, seasonPoints: 10 },
-    { playerId: "p8", playerName: "Harper", eventsPlayed: 1, seasonPoints: 4 },
-    { playerId: "p9", playerName: "Indy", eventsPlayed: 1, seasonPoints: 3 },
+    { playerId: "p8", playerName: "Harper", eventsPlayed: 1, seasonPoints: 3 },
+    { playerId: "p9", playerName: "Indy", eventsPlayed: 1, seasonPoints: 2 },
     { playerId: "p10", playerName: "Jules", eventsPlayed: 1, seasonPoints: 2 },
   ]);
 });

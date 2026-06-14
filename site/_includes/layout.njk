@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ pageTitle or site.title }}</title>
+    <link rel="stylesheet" href="/styles/site.css">
+  </head>
+  <body>
+    <main class="page-shell">
+      {{ content | safe }}
+    </main>
+  </body>
+</html>

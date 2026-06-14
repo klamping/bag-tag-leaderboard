@@ -54,6 +54,94 @@ test("Ties: tied players at placement cutoff share same tier points", () => {
   assert.equal(scored[4].placement, 1);
 });
 
+test("DNF rows receive attendance and tag bonuses but no placement or beat-your-tag points", () => {
+  const scored = scoreEvent({
+    participants: [
+      { playerId: "p1", finishPlace: 1, startingTag: 2 },
+      { playerId: "p2", finishPlace: null, startingTag: 1 },
+    ],
+  });
+
+  assert.deepEqual(scored[1], {
+    playerId: "p2",
+    attendance: 2,
+    placement: 0,
+    startingTagBonus: 1,
+    tagOneBonus: 2,
+    beatYourTagBonus: 0,
+    subtotal: 5,
+    multiplier: 1,
+    eventTotal: 5,
+  });
+});
+
+test("placement thresholds use the full attendee count including DNF participants", () => {
+  const scored = scoreEvent({
+    participants: [
+      { playerId: "p1", finishPlace: 1 },
+      { playerId: "p2", finishPlace: 2 },
+      { playerId: "p3", finishPlace: 3 },
+      { playerId: "p4", finishPlace: 4 },
+      { playerId: "p5", finishPlace: null },
+      { playerId: "p6", finishPlace: null },
+    ],
+  });
+
+  assert.deepEqual(scored.map((row) => row.placement), [8, 6, 5, 4, 0, 0]);
+});
+
+test("beat-your-tag compares against all tagged attendees but only finishers receive those points", () => {
+  const scored = scoreEvent({
+    participants: [
+      { playerId: "p1", finishPlace: 1, startingTag: 4 },
+      { playerId: "p2", finishPlace: 2, startingTag: 5 },
+      { playerId: "p3", finishPlace: 3, startingTag: 1 },
+      { playerId: "p4", finishPlace: null, startingTag: 2 },
+      { playerId: "p5", finishPlace: null, startingTag: 3 },
+    ],
+  });
+
+  assert.equal(scored[0].beatYourTagBonus, 2);
+  assert.equal(scored[1].beatYourTagBonus, 2);
+  assert.equal(scored[3].beatYourTagBonus, 0);
+  assert.equal(scored[4].beatYourTagBonus, 0);
+});
+
+test("non-null finish places must follow competition ranking", () => {
+  assert.throws(
+    () =>
+      scoreEvent({
+        participants: [
+          { playerId: "p1", finishPlace: 1, startingTag: 1 },
+          { playerId: "p2", finishPlace: 2, startingTag: 2 },
+          { playerId: "p3", finishPlace: 2, startingTag: 3 },
+          { playerId: "p4", finishPlace: 3, startingTag: 4 },
+        ],
+      }),
+    /competition ranking/i
+  );
+});
+
+test("finish-place validation applies only to non-null places", () => {
+  assert.doesNotThrow(() =>
+    scoreEvent({
+      participants: [
+        { playerId: "p1", finishPlace: 1, startingTag: 1 },
+        { playerId: "p2", finishPlace: null, startingTag: 2 },
+      ],
+    })
+  );
+
+  assert.throws(
+    () => scoreEvent({ participants: [{ playerId: "p1", finishPlace: 0, startingTag: 1 }] }),
+    /finishPlace/
+  );
+  assert.throws(
+    () => scoreEvent({ participants: [{ playerId: "p1", finishPlace: 1.5, startingTag: 1 }] }),
+    /finishPlace/
+  );
+});
+
 test("Starting Tag Bonus: counts worse tags and caps at 6", () => {
   const scored = scoreEvent({
     participants: [
@@ -263,14 +351,6 @@ test("throws for missing playerId", () => {
 test("throws for missing or invalid finishPlace", () => {
   assert.throws(
     () => scoreEvent({ participants: [{ playerId: "p1", startingTag: 1 }] }),
-    /finishPlace/
-  );
-  assert.throws(
-    () => scoreEvent({ participants: [{ playerId: "p1", finishPlace: 0, startingTag: 1 }] }),
-    /finishPlace/
-  );
-  assert.throws(
-    () => scoreEvent({ participants: [{ playerId: "p1", finishPlace: 1.5, startingTag: 1 }] }),
     /finishPlace/
   );
 });

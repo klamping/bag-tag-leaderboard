@@ -1,0 +1,59 @@
+---
+layout: layout.njk
+pagination:
+  data: publicModel.eventPages
+  size: 1
+  alias: eventPage
+permalink: "events/{{ eventPage.slug }}/index.html"
+eleventyComputed:
+  pageTitle: "{{ eventPage.name }} | Bag Tag Leaderboard"
+---
+<article class="stack">
+  <header class="page-header stack-tight">
+    <p><a href="/">Back to home</a></p>
+    <h1>{{ eventPage.name }}</h1>
+    <div class="meta-row">
+      <span>{{ eventPage.eventDate }}</span>
+      {% if eventPage.isMajor %}
+        <span class="badge">Major</span>
+      {% endif %}
+    </div>
+    <p><a href="{{ eventPage.udiscUrl }}">View on UDisc</a></p>
+  </header>
+
+  <section class="panel stack">
+    <h2>Scoreboard</h2>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Start Tag</th>
+            <th>Finish</th>
+            <th>Attendance</th>
+            <th>Placement</th>
+            <th>Start Bonus</th>
+            <th>Tag #1</th>
+            <th>Beat Tag</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in eventPage.scoreboard %}
+            <tr>
+              <td>{{ row.playerName }}</td>
+              <td>{{ row.startingTag }}</td>
+              <td>{% if row.eventResult === null %}DNF{% else %}{{ row.eventResult }}{% endif %}</td>
+              <td>{{ row.attendance }}</td>
+              <td>{{ row.placement }}</td>
+              <td>{{ row.startingTagBonus }}</td>
+              <td>{{ row.tagOneBonus }}</td>
+              <td>{{ row.beatYourTagBonus }}</td>
+              <td>{{ row.eventTotal }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</article>

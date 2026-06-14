@@ -1,0 +1,38 @@
+---
+layout: layout.njk
+pageTitle: Bag Tag Leaderboard
+---
+<header class="page-header">
+  <h1>{{ site.title }}</h1>
+</header>
+
+{% if publicModel.homepage.leaderboardRows.length %}
+  <section class="panel stack">
+    <h2>Leaderboard</h2>
+    <ol class="leaderboard-list">
+      {% for row in publicModel.homepage.leaderboardRows %}
+        <li class="leaderboard-row">
+          <span class="leaderboard-name">{{ row.playerName }}</span>
+          <span>{{ row.seasonPoints }} pts</span>
+          <span>{{ row.eventsPlayed }} event{% if row.eventsPlayed !== 1 %}s{% endif %}</span>
+        </li>
+      {% endfor %}
+    </ol>
+  </section>
+{% endif %}
+
+{% if publicModel.homepage.events.length %}
+  <section class="panel stack">
+    <h2>Events</h2>
+    <ul class="event-list">
+      {% for event in publicModel.homepage.events %}
+        <li>
+          <a href="/events/{{ event.slug }}/">{{ event.name }}</a>
+          <span class="event-date">{{ event.eventDate }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+{% else %}
+  <p class="empty-state">No events yet.</p>
+{% endif %}
