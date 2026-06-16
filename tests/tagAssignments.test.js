@@ -33,6 +33,8 @@ test("assigns duplicate highest+1 starting tag to all new players in an event, t
 
   assert.equal(assigned[1].participants[1].startingTag, 3);
   assert.equal(assigned[1].participants[2].startingTag, 3);
+  assert.equal(assigned[1].participants[1].allowsDuplicateStartingTag, true);
+  assert.equal(assigned[1].participants[2].allowsDuplicateStartingTag, true);
   assert.equal(assigned[2].participants[0].startingTag, 3);
   assert.equal(assigned[2].participants[1].startingTag, 4);
 });

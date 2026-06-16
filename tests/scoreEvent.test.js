@@ -37,6 +37,218 @@ test("Event Placement: top 50% and top 75% use ceil cutoffs", () => {
   assert.deepEqual(scored.map((row) => row.placement), [8, 6, 5, 4, 1, 1, 0]);
 });
 
+test("example matrix: point-rules scenarios score exact expected rows", () => {
+  const scenarios = [
+    {
+      name: "attendance and fixed placements",
+      event: {
+        participants: [
+          { playerId: "p1", finishPlace: 1 },
+          { playerId: "p2", finishPlace: 2 },
+          { playerId: "p3", finishPlace: 3 },
+          { playerId: "p4", finishPlace: 4 },
+        ],
+      },
+      expected: [
+        {
+          playerId: "p1",
+          attendance: 2,
+          placement: 8,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          subtotal: 10,
+          multiplier: 1,
+          eventTotal: 10,
+        },
+        {
+          playerId: "p2",
+          attendance: 2,
+          placement: 6,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          subtotal: 8,
+          multiplier: 1,
+          eventTotal: 8,
+        },
+        {
+          playerId: "p3",
+          attendance: 2,
+          placement: 5,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          subtotal: 7,
+          multiplier: 1,
+          eventTotal: 7,
+        },
+        {
+          playerId: "p4",
+          attendance: 2,
+          placement: 4,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          subtotal: 6,
+          multiplier: 1,
+          eventTotal: 6,
+        },
+      ],
+    },
+    {
+      name: "placement cutoffs with seven attendees",
+      event: {
+        participants: [
+          { playerId: "p1", finishPlace: 1 },
+          { playerId: "p2", finishPlace: 2 },
+          { playerId: "p3", finishPlace: 3 },
+          { playerId: "p4", finishPlace: 4 },
+          { playerId: "p5", finishPlace: 5 },
+          { playerId: "p6", finishPlace: 6 },
+          { playerId: "p7", finishPlace: 7 },
+        ],
+      },
+      expected: [
+        {
+          playerId: "p1",
+          attendance: 2,
+          placement: 8,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          subtotal: 10,
+          multiplier: 1,
+          eventTotal: 10,
+        },
+        {
+          playerId: "p2",
+          attendance: 2,
+          placement: 6,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          subtotal: 8,
+          multiplier: 1,
+          eventTotal: 8,
+        },
+        {
+          playerId: "p3",
+          attendance: 2,
+          placement: 5,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          subtotal: 7,
+          multiplier: 1,
+          eventTotal: 7,
+        },
+        {
+          playerId: "p4",
+          attendance: 2,
+          placement: 4,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          subtotal: 6,
+          multiplier: 1,
+          eventTotal: 6,
+        },
+        {
+          playerId: "p5",
+          attendance: 2,
+          placement: 1,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          subtotal: 3,
+          multiplier: 1,
+          eventTotal: 3,
+        },
+        {
+          playerId: "p6",
+          attendance: 2,
+          placement: 1,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          subtotal: 3,
+          multiplier: 1,
+          eventTotal: 3,
+        },
+        {
+          playerId: "p7",
+          attendance: 2,
+          placement: 0,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          subtotal: 2,
+          multiplier: 1,
+          eventTotal: 2,
+        },
+      ],
+    },
+    {
+      name: "dnf still gets attendance and tag bonuses",
+      event: {
+        participants: [
+          { playerId: "p1", finishPlace: 1, startingTag: 2 },
+          { playerId: "p2", finishPlace: null, startingTag: 1 },
+        ],
+      },
+      expected: [
+        {
+          playerId: "p1",
+          attendance: 2,
+          placement: 8,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 1,
+          subtotal: 11,
+          multiplier: 1,
+          eventTotal: 11,
+        },
+        {
+          playerId: "p2",
+          attendance: 2,
+          placement: 0,
+          startingTagBonus: 1,
+          tagOneBonus: 2,
+          beatYourTagBonus: 0,
+          subtotal: 5,
+          multiplier: 1,
+          eventTotal: 5,
+        },
+      ],
+    },
+    {
+      name: "major event doubles subtotal",
+      event: {
+        isMajor: true,
+        participants: [{ playerId: "p1", finishPlace: 1, startingTag: 1 }],
+      },
+      expected: [
+        {
+          playerId: "p1",
+          attendance: 2,
+          placement: 8,
+          startingTagBonus: 0,
+          tagOneBonus: 2,
+          beatYourTagBonus: 0,
+          subtotal: 12,
+          multiplier: 2,
+          eventTotal: 24,
+        },
+      ],
+    },
+  ];
+
+  for (const scenario of scenarios) {
+    assert.deepEqual(scoreEvent(scenario.event), scenario.expected, scenario.name);
+  }
+});
+
 test("Ties: tied players at placement cutoff share same tier points", () => {
   const scored = scoreEvent({
     participants: [
@@ -52,6 +264,54 @@ test("Ties: tied players at placement cutoff share same tier points", () => {
   assert.equal(scored[2].placement, 5);
   assert.equal(scored[3].placement, 5);
   assert.equal(scored[4].placement, 1);
+});
+
+test("example matrix: finishing ties at placement thresholds share exact points", () => {
+  const scenarios = [
+    {
+      name: "top-half cutoff finishers tied at fifth both keep two-point placement",
+      event: {
+        participants: [
+          { playerId: "p1", finishPlace: 1 },
+          { playerId: "p2", finishPlace: 2 },
+          { playerId: "p3", finishPlace: 3 },
+          { playerId: "p4", finishPlace: 4 },
+          { playerId: "p5", finishPlace: 5 },
+          { playerId: "p6", finishPlace: 5 },
+          { playerId: "p7", finishPlace: 7 },
+          { playerId: "p8", finishPlace: 8 },
+          { playerId: "p9", finishPlace: 9 },
+          { playerId: "p10", finishPlace: 10 },
+        ],
+      },
+      expected: [8, 6, 5, 4, 2, 2, 1, 1, 0, 0],
+    },
+    {
+      name: "top-seventy-five-percent cutoff finishers tied at sixth both keep one-point placement",
+      event: {
+        participants: [
+          { playerId: "p1", finishPlace: 1 },
+          { playerId: "p2", finishPlace: 2 },
+          { playerId: "p3", finishPlace: 3 },
+          { playerId: "p4", finishPlace: 4 },
+          { playerId: "p5", finishPlace: 5 },
+          { playerId: "p6", finishPlace: 6 },
+          { playerId: "p7", finishPlace: 6 },
+          { playerId: "p8", finishPlace: 8 },
+        ],
+      },
+      expected: [8, 6, 5, 4, 1, 1, 1, 0],
+    },
+  ];
+
+  for (const scenario of scenarios) {
+    const scored = scoreEvent(scenario.event);
+    assert.deepEqual(
+      scored.map((row) => row.placement),
+      scenario.expected,
+      scenario.name
+    );
+  }
 });
 
 test("DNF rows receive attendance and tag bonuses but no placement or beat-your-tag points", () => {
@@ -189,11 +449,93 @@ test("Beat Your Tag Bonus: +1/+2/+3 thresholds follow improvement bands", () => 
   assert.equal(scored[2].beatYourTagBonus, 1);
 });
 
+test("example matrix: beat-your-tag thresholds award 1, 2, and 3 points", () => {
+  const scored = scoreEvent({
+    participants: [
+      { playerId: "p1", finishPlace: 4, startingTag: 1 },
+      { playerId: "p2", finishPlace: 1, startingTag: 2 },
+      { playerId: "p3", finishPlace: 5, startingTag: 3 },
+      { playerId: "p4", finishPlace: 6, startingTag: 4 },
+      { playerId: "p5", finishPlace: 2, startingTag: 5 },
+      { playerId: "p6", finishPlace: 7, startingTag: 6 },
+      { playerId: "p7", finishPlace: 8, startingTag: 7 },
+      { playerId: "p8", finishPlace: 3, startingTag: 8 },
+    ],
+  });
+
+  assert.deepEqual(
+    scored.map((row) => ({
+      playerId: row.playerId,
+      beatYourTagBonus: row.beatYourTagBonus,
+      eventTotal: row.eventTotal,
+    })),
+    [
+      { playerId: "p1", beatYourTagBonus: 0, eventTotal: 14 },
+      { playerId: "p2", beatYourTagBonus: 1, eventTotal: 17 },
+      { playerId: "p3", beatYourTagBonus: 0, eventTotal: 8 },
+      { playerId: "p4", beatYourTagBonus: 0, eventTotal: 7 },
+      { playerId: "p5", beatYourTagBonus: 2, eventTotal: 13 },
+      { playerId: "p6", beatYourTagBonus: 0, eventTotal: 4 },
+      { playerId: "p7", beatYourTagBonus: 0, eventTotal: 3 },
+      { playerId: "p8", beatYourTagBonus: 3, eventTotal: 10 },
+    ]
+  );
+});
+
+test("throws for duplicate startingTag without explicit allowance", () => {
+  assert.throws(
+    () =>
+      scoreEvent({
+        participants: [
+          { playerId: "p1", finishPlace: 1, startingTag: 7 },
+          { playerId: "p2", finishPlace: 2, startingTag: 7 },
+        ],
+      }),
+    /Duplicate startingTag 7 requires explicit allowance/
+  );
+});
+
+test("allowed duplicate starting tags share starting rank and still score", () => {
+  const scored = scoreEvent({
+    participants: [
+      {
+        playerId: "p1",
+        finishPlace: 1,
+        startingTag: 7,
+        allowsDuplicateStartingTag: true,
+      },
+      {
+        playerId: "p2",
+        finishPlace: 2,
+        startingTag: 7,
+        allowsDuplicateStartingTag: true,
+      },
+      { playerId: "p3", finishPlace: 3, startingTag: 9 },
+    ],
+  });
+
+  assert.deepEqual(scored.map((row) => row.placement), [8, 6, 5]);
+  assert.equal(scored[1].beatYourTagBonus, 0);
+  assert.equal(scored[2].beatYourTagBonus, 0);
+  assert.deepEqual(scored.map((row) => row.startingTagBonus), [1, 1, 0]);
+  assert.deepEqual(scored.map((row) => row.eventTotal), [11, 9, 7]);
+});
+
 test("Starting tag ties: equal starting tags share starting rank", () => {
   const scored = scoreEvent({
     participants: [
-      { playerId: "p1", finishPlace: 1, startingTag: 4 },
-      { playerId: "p2", finishPlace: 3, startingTag: 4 },
+      {
+        playerId: "p1",
+        finishPlace: 1,
+        startingTag: 4,
+        allowsDuplicateStartingTag: true,
+      },
+      {
+        playerId: "p2",
+        finishPlace: 3,
+        startingTag: 4,
+        allowsDuplicateStartingTag: true,
+      },
       { playerId: "p3", finishPlace: 2, startingTag: 9 },
     ],
   });
