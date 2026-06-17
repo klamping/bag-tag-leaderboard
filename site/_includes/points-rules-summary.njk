@@ -4,6 +4,8 @@
     <h2 id="points-rules-summary-title">{{ publicModel.pointsRules.summaryTitle }}</h2>
   </div>
   <p>{{ publicModel.pointsRules.summaryIntro }}</p>
+  <p class="points-rules-summary-note">{{ publicModel.pointsRules.summaryTieNote }}</p>
+  <hr />
   <dl class="points-rules-summary-list">
     {% for item in publicModel.pointsRules.summaryItems %}
       <div>
@@ -12,7 +14,6 @@
       </div>
     {% endfor %}
   </dl>
-  <p class="points-rules-summary-note">{{ publicModel.pointsRules.summaryTieNote }}</p>
   <p>
     <a class="points-rules-summary-link" href="{{ publicModel.pointsRules.href }}">See full points rules</a>
   </p>
