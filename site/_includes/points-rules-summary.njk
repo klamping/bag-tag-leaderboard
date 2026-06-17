@@ -1,0 +1,19 @@
+<section class="panel stack-tight points-rules-summary" aria-labelledby="points-rules-summary-title">
+  <div class="section-heading stack-tight">
+    <p class="eyebrow">Scoring</p>
+    <h2 id="points-rules-summary-title">{{ publicModel.pointsRules.summaryTitle }}</h2>
+  </div>
+  <p>{{ publicModel.pointsRules.summaryIntro }}</p>
+  <dl class="points-rules-summary-list">
+    {% for item in publicModel.pointsRules.summaryItems %}
+      <div>
+        <dt>{{ item.label }}</dt>
+        <dd>{{ item.detail }}</dd>
+      </div>
+    {% endfor %}
+  </dl>
+  <p class="points-rules-summary-note">{{ publicModel.pointsRules.summaryTieNote }}</p>
+  <p>
+    <a class="points-rules-summary-link" href="{{ publicModel.pointsRules.href }}">See full points rules</a>
+  </p>
+</section>

@@ -116,6 +116,85 @@ test("buildPublicModel returns homepage and event page models from the canonical
   const model = buildPublicModel(createStore());
 
   // assert.equal(model.siteTitle, "Bag Tag Leaderboard");
+  assert.deepEqual(model.pointsRules, {
+    summaryTitle: "How points work",
+    summaryIntro: "Season standings combine attendance, finish placement, and tag-based bonuses.",
+    summaryItems: [
+      { label: "Attendance", detail: "2 points for attending an event." },
+      {
+        label: "Placement",
+        detail: "1st gets 8, 2nd 6, 3rd 5, 4th 4, then top-half gets 2 and top-75% gets 1.",
+      },
+      {
+        label: "Starting Tag Bonus",
+        detail: "+1 for each player at the event with a worse tag than yours, capped at 6.",
+      },
+      { label: "Tag #1 Bonus", detail: "+2 if you start the event holding tag #1." },
+      {
+        label: "Beat Your Tag Bonus",
+        detail: "Improve 1-2 spots for +1, 3-4 for +2, and 5+ for +3.",
+      },
+    ],
+    summaryTieNote: "Tied players share placement points.",
+    fullPageTitle: "Points Rules",
+    fullPageIntro: "Bag tag points come from attendance, finish placement, and tag-based bonuses.",
+    sections: [
+      {
+        title: "Attendance",
+        items: ["2 points for attending an event."],
+      },
+      {
+        title: "Event Placement",
+        items: [
+          "1st place: 8 points",
+          "2nd place: 6 points",
+          "3rd place: 5 points",
+          "4th place: 4 points",
+          "Top 50% of the field: 2 points",
+          "Top 75% of the field: 1 point",
+        ],
+      },
+      {
+        title: "Starting Tag Bonus",
+        items: [
+          "+1 point for each player at the event with a worse tag than yours.",
+          "Maximum of 6 points.",
+        ],
+      },
+      {
+        title: "Tag #1 Bonus",
+        items: ["+2 points if you start the event with tag #1."],
+      },
+      {
+        title: 'Beat Your Tag Bonus',
+        items: [
+          "Players are ranked at the start of the event by tag among attendees.",
+          "Players are ranked again by event results.",
+          "Improvement is starting rank minus finishing rank.",
+          "Improve by 1-2 positions: +1 point",
+          "Improve by 3-4 positions: +2 points",
+          "Improve by 5 or more positions: +3 points",
+        ],
+      },
+      {
+        title: "Ties",
+        items: ["Tied players at the end of the event share placement points."],
+      },
+      {
+        title: "Starting Tag Duplication Rules",
+        items: [
+          "Duplicate starting tags are allowed only when a player is newly joining mid-season and inherits the entry tag.",
+          "Duplicate starting tags are allowed when league policy explicitly assigns the same provisional tag to multiple late joiners.",
+          "Duplicate starting tags are not allowed if both players already had established tags before the event.",
+          "Duplicate starting tags are not allowed when caused by admin data-entry mistakes.",
+          "Duplicate starting tags are not allowed if they conflict with a previously confirmed event assignment and no correction workflow is used.",
+          "When duplicate starting tags are allowed, players sharing the same tag share the same starting rank.",
+          "No secondary tiebreak is used for starting-rank calculations.",
+        ],
+      },
+    ],
+    href: "/points-rules/",
+  });
   assert.deepEqual(model.homepage.leaderboardEvents, [
     {
       slug: "spring-showdown",
@@ -906,7 +985,7 @@ test("siteBuildCommand validates the canonical store and returns the public mode
   await fs.access(path.join(outputDirectory, "styles", "site.css"));
 });
 
-test("siteBuildCommand builds a real Eleventy site into dist with homepage and event pages", async (t) => {
+test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) => {
   const stdout = [];
   const tempDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "site-build-"));
 
@@ -965,6 +1044,10 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
     path.join(tempDirectory, "dist", "events", "spring-showdown", "index.html"),
     "utf8"
   );
+  const pointsRulesPage = await fs.readFile(
+    path.join(tempDirectory, "dist", "points-rules", "index.html"),
+    "utf8"
+  );
   const stylesheet = await fs.readFile(path.join(tempDirectory, "dist", "styles", "site.css"), "utf8");
 
   // assert.match(homepage, /<title>Bag Tag Leaderboard<\/title>/i);
@@ -973,7 +1056,7 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
   // assert.match(homepage, />Events</i);
   assert.match(homepage, elementWithClassPattern("div", "leaderboard-table-scroll"));
   assert.match(homepage, elementWithClassPattern("table", "leaderboard-table"));
-  assert.match(homepage, /<th scope="col">Pts<\/th>/i);
+  assert.match(homepage, /<th scope="col">Season<br\s*\/?>Total<\/th>/i);
   assert.match(homepage, /<th scope="col">Player<\/th>/i);
   assert.match(
     homepage,
@@ -1012,6 +1095,23 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
   assert.match(homepage, /20<\/td>/i);
   assert.match(homepage, />Beat Your Tag Bonus</i);
   assert.match(homepage, />Tag 1 Bonus</i);
+  assert.match(homepage, elementWithClassPattern("section", "points-rules-summary"));
+  assert.match(homepage, />How points work</i);
+  assert.match(
+    homepage,
+    />Season standings combine attendance, finish placement, and tag-based bonuses\./i
+  );
+  assert.match(
+    homepage,
+    /<dt>Attendance<\/dt>\s*<dd>2 points for attending an event\.<\/dd>/i
+  );
+  assert.match(
+    homepage,
+    /<dt>Placement<\/dt>\s*<dd>1st gets 8, 2nd 6, 3rd 5, 4th 4, then top-half gets 2 and top-75% gets 1\.<\/dd>/i
+  );
+  assert.match(homepage, />Tied players share placement points\./i);
+  assert.match(homepage, /href="\/points-rules\/"[^>]*>See full points rules</i);
+  assert.doesNotMatch(homepage, /<dl class="visually-hidden">/i);
 
   // assert.match(eventPage, /<title>Spring Showdown \| Bag Tag Leaderboard<\/title>/i);
   assert.match(eventPage, />Spring Showdown</i);
@@ -1033,7 +1133,10 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
     )
   );
   assert.match(eventPage, elementWithClassPattern("section", "scoreboard-panel"));
+  assert.match(eventPage, elementWithClassPattern("section", "points-rules-summary"));
   assert.match(eventPage, />Player</i);
+  assert.match(eventPage, />How points work</i);
+  assert.match(eventPage, /href="\/points-rules\/"[^>]*>See full points rules</i);
   // assert.match(eventPage, />Start Tag</i);
   // assert.match(eventPage, />Finish</i);
   // assert.match(eventPage, />Attendance</i);
@@ -1043,6 +1146,21 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
   // assert.match(eventPage, />Beat Tag</i);
   // assert.match(eventPage, />Total</i);
   assert.match(eventPage, />DNF</i);
+
+  assert.match(pointsRulesPage, /<title>Points Rules \| Bag Tag Leaderboard<\/title>/i);
+  assert.match(pointsRulesPage, />Points Rules</i);
+  assert.match(
+    pointsRulesPage,
+    />Bag tag points come from attendance, finish placement, and tag-based bonuses\./i
+  );
+  assert.match(pointsRulesPage, />Event Placement</i);
+  assert.match(pointsRulesPage, />1st place: 8 points</i);
+  assert.match(pointsRulesPage, />Starting Tag Duplication Rules</i);
+  assert.match(
+    pointsRulesPage,
+    />Duplicate starting tags are allowed only when a player is newly joining mid-season and inherits the entry tag\./i
+  );
+  assert.match(pointsRulesPage, /href="\/"[^>]*>Back to home</i);
 
   assert.match(stylesheet, /--color-sand:/i);
   assert.match(stylesheet, /\.leaderboard-table-scroll\s*\{/i);
@@ -1075,6 +1193,11 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
   assert.match(stylesheet, /\.leaderboard-breakdown\s+\.table-scroll\s*\{/i);
   assert.match(stylesheet, /\.visually-hidden\s*\{/i);
   assert.match(stylesheet, /\.scoreboard-panel\s*table/i);
+  assert.match(stylesheet, /\.points-rules-summary\s*\{/i);
+  assert.match(stylesheet, /\.points-rules-summary-list\s*\{/i);
+  assert.match(stylesheet, /\.points-rules-summary-link\s*\{/i);
+  assert.match(stylesheet, /\.points-rules-page\s*\{/i);
+  assert.match(stylesheet, /\.points-rules-section\s*\{/i);
 });
 
 test("siteBuildCommand leaves missed homepage event overview cells blank", async (t) => {

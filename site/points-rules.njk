@@ -1,0 +1,24 @@
+---
+layout: layout.njk
+pageTitle: Points Rules | Bag Tag Leaderboard
+permalink: "points-rules/index.html"
+---
+<article class="points-rules-page stack">
+  <header class="page-header panel stack-tight">
+    <p><a class="back-link" href="/">Back to home</a></p>
+    <p class="eyebrow">Scoring</p>
+    <h1>{{ publicModel.pointsRules.fullPageTitle }}</h1>
+    <p>{{ publicModel.pointsRules.fullPageIntro }}</p>
+  </header>
+
+  {% for section in publicModel.pointsRules.sections %}
+    <section class="panel stack-tight points-rules-section" aria-labelledby="section-{{ loop.index }}">
+      <h2 id="section-{{ loop.index }}">{{ section.title }}</h2>
+      <ul class="points-rules-section-list">
+        {% for item in section.items %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endfor %}
+</article>
