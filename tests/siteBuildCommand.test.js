@@ -95,6 +95,13 @@ function elementWithClassPattern(tagName, className) {
   return new RegExp(`<${tagName}\\b[^>]*class="(?=[^"]*\\b${className}\\b)[^"]*"`, "i");
 }
 
+function elementWithAttributeAndClassPattern(tagName, attributeName, attributeValue, className) {
+  return new RegExp(
+    `<${tagName}\\b(?=[^>]*\\b${attributeName}="${attributeValue}")(?=[^>]*class="(?=[^"]*\\b${className}\\b)[^"]*")[^>]*>`,
+    "i"
+  );
+}
+
 test("buildPublicModel returns homepage and event page models from the canonical store", () => {
   const model = buildPublicModel(createStore());
 
@@ -233,9 +240,17 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
   assert.match(eventPage, />View on UDisc</i);
   assert.match(eventPage, elementWithClassPattern("article", "event-page"));
   assert.match(eventPage, elementWithClassPattern("header", "event-poster"));
-  assert.match(eventPage, /<a\b[^>]*href="\/"[^>]*class="(?=[^"]*\bback-link\b)[^"]*"/i);
+  assert.match(eventPage, elementWithAttributeAndClassPattern("a", "href", "\/", "back-link"));
   assert.match(eventPage, elementWithClassPattern("div", "event-meta"));
-  assert.match(eventPage, /<a\b[^>]*href="https:\/\/udisc\.com\/events\/spring-showdown"[^>]*class="(?=[^"]*\bsecondary-link\b)[^"]*"/i);
+  assert.match(
+    eventPage,
+    elementWithAttributeAndClassPattern(
+      "a",
+      "href",
+      "https:\/\/udisc\.com\/events\/spring-showdown",
+      "secondary-link"
+    )
+  );
   assert.match(eventPage, elementWithClassPattern("section", "scoreboard-panel"));
   assert.match(eventPage, />Player</i);
   assert.match(eventPage, />Start Tag</i);
