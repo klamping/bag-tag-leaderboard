@@ -95,9 +95,17 @@ function elementWithClassPattern(tagName, className) {
   return new RegExp(`<${tagName}\\b[^>]*class="(?=[^"]*\\b${className}\\b)[^"]*"`, "i");
 }
 
+function escapeRegexLiteral(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function elementWithAttributeAndClassPattern(tagName, attributeName, attributeValue, className) {
+  const safeAttributeName = escapeRegexLiteral(attributeName);
+  const safeAttributeValue = escapeRegexLiteral(attributeValue);
+  const safeClassName = escapeRegexLiteral(className);
+
   return new RegExp(
-    `<${tagName}\\b(?=[^>]*\\b${attributeName}="${attributeValue}")(?=[^>]*class="(?=[^"]*\\b${className}\\b)[^"]*")[^>]*>`,
+    `<${tagName}\\b(?=[^>]*\\b${safeAttributeName}="${safeAttributeValue}")(?=[^>]*class="(?=[^"]*\\b${safeClassName}\\b)[^"]*")[^>]*>`,
     "i"
   );
 }
