@@ -192,26 +192,38 @@ test("siteDevCommand starts Eleventy watch and serve with the public model", asy
   ]);
 });
 
-test("siteDevCommand writes failures to stderr and exits non-zero", async () => {
+test("siteDevCommand stops before Eleventy startup when canonical store validation fails", async () => {
+  const calls = [];
   const io = {
-    stdout: "",
-    stderr: "",
+    stdout: [],
+    stderr: [],
     writeStdout(value) {
-      this.stdout += value;
+      this.stdout.push(value);
     },
     writeStderr(value) {
-      this.stderr += value;
+      this.stderr.push(value);
     },
   };
 
   const result = await siteDevCommand({
     loadCanonicalStore: async () => {
-      throw new Error("boom");
+      calls.push("loadCanonicalStore");
+      return { players: [], events: [], results: [] };
+    },
+    validateCanonicalStore: () => {
+      calls.push("validateCanonicalStore");
+      throw new Error("invalid canonical store");
+    },
+    Eleventy: class FakeEleventy {
+      constructor() {
+        calls.push("Eleventy");
+      }
     },
     io,
   });
 
   assert.deepEqual(result, { exitCode: 1 });
-  assert.equal(io.stdout, "");
-  assert.equal(io.stderr, "boom\n");
+  assert.deepEqual(io.stdout, []);
+  assert.deepEqual(io.stderr, ["invalid canonical store\n"]);
+  assert.deepEqual(calls, ["loadCanonicalStore", "validateCanonicalStore"]);
 });
