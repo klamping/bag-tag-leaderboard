@@ -452,6 +452,49 @@ test("getPublicEventScoreboardBySlug breaks ties by playerId when totals and nam
   );
 });
 
+test("getPublicEventScoreboardBySlug sorts by finish place then player name with DNF last", () => {
+  const event = getPublicEventScoreboardBySlug({
+    slug: "finish-order",
+    players: [
+      { id: "p1", name: "Cara" },
+      { id: "p2", name: "Ada" },
+      { id: "p3", name: "Bert" },
+      { id: "p4", name: "Zane" },
+    ],
+    events: [
+      {
+        id: "e1",
+        slug: "finish-order",
+        name: "Finish Order",
+        eventDate: "2026-06-12",
+        confirmed: true,
+      },
+    ],
+    eventResults: [
+      { id: "r1", eventId: "e1", playerId: "p1", startingTag: 4, finishPlace: 2 },
+      { id: "r2", eventId: "e1", playerId: "p2", startingTag: 1, finishPlace: 1 },
+      { id: "r3", eventId: "e1", playerId: "p3", startingTag: 2, finishPlace: 2 },
+      { id: "r4", eventId: "e1", playerId: "p4", startingTag: 3, finishPlace: null },
+    ],
+    eventPoints: [
+      { eventResultId: "r1", eventTotal: 20 },
+      { eventResultId: "r2", eventTotal: 5 },
+      { eventResultId: "r3", eventTotal: 30 },
+      { eventResultId: "r4", eventTotal: 50 },
+    ],
+  });
+
+  assert.deepEqual(
+    event.scoreboard.map((row) => [row.playerName, row.eventResult]),
+    [
+      ["Ada", 1],
+      ["Bert", 2],
+      ["Cara", 2],
+      ["Zane", null],
+    ]
+  );
+});
+
 test("getPublicEventScoreboardBySlug row shape includes all score columns", () => {
   const event = getPublicEventScoreboardBySlug({
     slug: "shape-check",
