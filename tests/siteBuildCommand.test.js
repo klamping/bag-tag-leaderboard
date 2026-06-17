@@ -238,7 +238,7 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
   assert.match(homepage, /href="\/events\/spring-showdown\/"/i);
   assert.match(homepage, elementWithClassPattern("body", "site-body"));
   assert.match(homepage, elementWithClassPattern("header", "hero"));
-  assert.match(homepage, elementWithClassPattern("h2", "section-heading"));
+  assert.match(homepage, elementWithClassPattern("div", "section-heading"));
   assert.match(homepage, elementWithClassPattern("li", "leaderboard-row"));
   assert.match(homepage, elementWithClassPattern("li", "event-tile"));
 

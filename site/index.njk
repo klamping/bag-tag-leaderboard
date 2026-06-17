@@ -2,19 +2,25 @@
 layout: layout.njk
 pageTitle: Bag Tag Leaderboard
 ---
-<header class="page-header">
+<header class="page-header hero panel stack">
+  <p class="eyebrow">League Standings</p>
   <h1>{{ site.title }}</h1>
 </header>
 
 {% if publicModel.homepage.leaderboardRows.length %}
   <section class="panel stack">
-    <h2>Leaderboard</h2>
+    <div class="section-heading stack-tight">
+      <p class="eyebrow">Season Race</p>
+      <h2>Leaderboard</h2>
+    </div>
     <ol class="leaderboard-list">
       {% for row in publicModel.homepage.leaderboardRows %}
-        <li class="leaderboard-row">
-          <span class="leaderboard-name">{{ row.playerName }}</span>
-          <span>{{ row.seasonPoints }} pts</span>
-          <span>{{ row.eventsPlayed }} event{% if row.eventsPlayed !== 1 %}s{% endif %}</span>
+        <li class="leaderboard-row panel">
+          <div class="leaderboard-primary">
+            <span class="leaderboard-name">{{ row.playerName }}</span>
+            <span class="leaderboard-events">{{ row.eventsPlayed }} event{% if row.eventsPlayed !== 1 %}s{% endif %}</span>
+          </div>
+          <span class="leaderboard-points">{{ row.seasonPoints }} pts</span>
         </li>
       {% endfor %}
     </ol>
@@ -23,12 +29,15 @@ pageTitle: Bag Tag Leaderboard
 
 {% if publicModel.homepage.events.length %}
   <section class="panel stack">
-    <h2>Events</h2>
+    <div class="section-heading stack-tight">
+      <p class="eyebrow">Tournament Lineup</p>
+      <h2>Events</h2>
+    </div>
     <ul class="event-list">
       {% for event in publicModel.homepage.events %}
-        <li>
-          <a href="/events/{{ event.slug }}/">{{ event.name }}</a>
+        <li class="event-tile panel stack-tight">
           <span class="event-date">{{ event.eventDate }}</span>
+          <a href="/events/{{ event.slug }}/">{{ event.name }}</a>
         </li>
       {% endfor %}
     </ul>

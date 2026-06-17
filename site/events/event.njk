@@ -8,21 +8,24 @@ permalink: "events/{{ eventPage.slug }}/index.html"
 eleventyComputed:
   pageTitle: "{{ eventPage.name }} | Bag Tag Leaderboard"
 ---
-<article class="stack">
-  <header class="page-header stack-tight">
-    <p><a href="/">Back to home</a></p>
+<article class="event-page stack">
+  <header class="page-header event-poster panel stack-tight">
+    <p><a class="back-link" href="/">Back to home</a></p>
     <h1>{{ eventPage.name }}</h1>
-    <div class="meta-row">
+    <div class="meta-row event-meta">
       <span>{{ eventPage.eventDate }}</span>
       {% if eventPage.isMajor %}
         <span class="badge">Major</span>
       {% endif %}
     </div>
-    <p><a href="{{ eventPage.udiscUrl }}">View on UDisc</a></p>
+    <p><a class="secondary-link" href="{{ eventPage.udiscUrl }}">View on UDisc</a></p>
   </header>
 
-  <section class="panel stack">
-    <h2>Scoreboard</h2>
+  <section class="panel stack scoreboard-panel">
+    <div class="section-heading stack-tight">
+      <p class="eyebrow">Round Results</p>
+      <h2>Scoreboard</h2>
+    </div>
     <div class="table-scroll">
       <table>
         <thead>
