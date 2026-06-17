@@ -208,12 +208,18 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
     path.join(tempDirectory, "dist", "events", "spring-showdown", "index.html"),
     "utf8"
   );
+  const stylesheet = await fs.readFile(path.join(tempDirectory, "dist", "styles", "site.css"), "utf8");
 
   assert.match(homepage, /<title>Bag Tag Leaderboard<\/title>/i);
   assert.match(homepage, />Bag Tag Leaderboard</i);
   assert.match(homepage, />Leaderboard</i);
   assert.match(homepage, />Events</i);
   assert.match(homepage, /href="\/events\/spring-showdown\/"/i);
+  assert.match(homepage, /class="site-body"/i);
+  assert.match(homepage, /class="page-header hero panel stack"/i);
+  assert.match(homepage, /class="section-heading"/i);
+  assert.match(homepage, /class="leaderboard-row panel"/i);
+  assert.match(homepage, /class="event-tile panel stack-tight"/i);
 
   assert.match(eventPage, /<title>Spring Showdown \| Bag Tag Leaderboard<\/title>/i);
   assert.match(eventPage, />Spring Showdown</i);
@@ -221,6 +227,12 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
   assert.match(eventPage, />Major</i);
   assert.match(eventPage, /href="https:\/\/udisc\.com\/events\/spring-showdown"/i);
   assert.match(eventPage, />View on UDisc</i);
+  assert.match(eventPage, /class="event-page stack"/i);
+  assert.match(eventPage, /class="page-header event-poster panel stack-tight"/i);
+  assert.match(eventPage, /class="back-link"/i);
+  assert.match(eventPage, /class="meta-row event-meta"/i);
+  assert.match(eventPage, /class="secondary-link"/i);
+  assert.match(eventPage, /class="panel stack scoreboard-panel"/i);
   assert.match(eventPage, />Player</i);
   assert.match(eventPage, />Start Tag</i);
   assert.match(eventPage, />Finish</i);
@@ -231,6 +243,11 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
   assert.match(eventPage, />Beat Tag</i);
   assert.match(eventPage, />Total</i);
   assert.match(eventPage, />DNF</i);
+
+  assert.match(stylesheet, /--color-sand:/i);
+  assert.match(stylesheet, /\.hero\s*\{/i);
+  assert.match(stylesheet, /\.event-tile\s*\{/i);
+  assert.match(stylesheet, /\.scoreboard-panel\s*table/i);
 });
 
 test("siteBuildCommand renders a single empty-state message when no events exist", async (t) => {
