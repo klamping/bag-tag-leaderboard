@@ -91,6 +91,10 @@ async function createTempBuildDirectory(t, prefix = "site-build-") {
   return tempDirectory;
 }
 
+function elementWithClassPattern(tagName, className) {
+  return new RegExp(`<${tagName}\\b[^>]*class="(?=[^"]*\\b${className}\\b)[^"]*"`, "i");
+}
+
 test("buildPublicModel returns homepage and event page models from the canonical store", () => {
   const model = buildPublicModel(createStore());
 
@@ -215,11 +219,11 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
   assert.match(homepage, />Leaderboard</i);
   assert.match(homepage, />Events</i);
   assert.match(homepage, /href="\/events\/spring-showdown\/"/i);
-  assert.match(homepage, /class="[^"]*\bsite-body\b[^"]*"/i);
-  assert.match(homepage, /class="[^"]*\bhero\b[^"]*"/i);
-  assert.match(homepage, /class="[^"]*\bsection-heading\b[^"]*"/i);
-  assert.match(homepage, /class="[^"]*\bleaderboard-row\b[^"]*"/i);
-  assert.match(homepage, /class="[^"]*\bevent-tile\b[^"]*"/i);
+  assert.match(homepage, elementWithClassPattern("body", "site-body"));
+  assert.match(homepage, elementWithClassPattern("header", "hero"));
+  assert.match(homepage, elementWithClassPattern("h2", "section-heading"));
+  assert.match(homepage, elementWithClassPattern("li", "leaderboard-row"));
+  assert.match(homepage, elementWithClassPattern("li", "event-tile"));
 
   assert.match(eventPage, /<title>Spring Showdown \| Bag Tag Leaderboard<\/title>/i);
   assert.match(eventPage, />Spring Showdown</i);
@@ -227,12 +231,12 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
   assert.match(eventPage, />Major</i);
   assert.match(eventPage, /href="https:\/\/udisc\.com\/events\/spring-showdown"/i);
   assert.match(eventPage, />View on UDisc</i);
-  assert.match(eventPage, /class="[^"]*\bevent-page\b[^"]*"/i);
-  assert.match(eventPage, /class="[^"]*\bevent-poster\b[^"]*"/i);
-  assert.match(eventPage, /class="[^"]*\bback-link\b[^"]*"/i);
-  assert.match(eventPage, /class="[^"]*\bevent-meta\b[^"]*"/i);
-  assert.match(eventPage, /class="[^"]*\bsecondary-link\b[^"]*"/i);
-  assert.match(eventPage, /class="[^"]*\bscoreboard-panel\b[^"]*"/i);
+  assert.match(eventPage, elementWithClassPattern("article", "event-page"));
+  assert.match(eventPage, elementWithClassPattern("header", "event-poster"));
+  assert.match(eventPage, /<a\b[^>]*href="\/"[^>]*class="(?=[^"]*\bback-link\b)[^"]*"/i);
+  assert.match(eventPage, elementWithClassPattern("div", "event-meta"));
+  assert.match(eventPage, /<a\b[^>]*href="https:\/\/udisc\.com\/events\/spring-showdown"[^>]*class="(?=[^"]*\bsecondary-link\b)[^"]*"/i);
+  assert.match(eventPage, elementWithClassPattern("section", "scoreboard-panel"));
   assert.match(eventPage, />Player</i);
   assert.match(eventPage, />Start Tag</i);
   assert.match(eventPage, />Finish</i);
