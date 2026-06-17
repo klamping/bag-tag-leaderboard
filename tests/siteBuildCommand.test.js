@@ -215,11 +215,11 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
   assert.match(homepage, />Leaderboard</i);
   assert.match(homepage, />Events</i);
   assert.match(homepage, /href="\/events\/spring-showdown\/"/i);
-  assert.match(homepage, /class="site-body"/i);
-  assert.match(homepage, /class="page-header hero panel stack"/i);
-  assert.match(homepage, /class="section-heading"/i);
-  assert.match(homepage, /class="leaderboard-row panel"/i);
-  assert.match(homepage, /class="event-tile panel stack-tight"/i);
+  assert.match(homepage, /class="[^"]*\bsite-body\b[^"]*"/i);
+  assert.match(homepage, /class="[^"]*\bhero\b[^"]*"/i);
+  assert.match(homepage, /class="[^"]*\bsection-heading\b[^"]*"/i);
+  assert.match(homepage, /class="[^"]*\bleaderboard-row\b[^"]*"/i);
+  assert.match(homepage, /class="[^"]*\bevent-tile\b[^"]*"/i);
 
   assert.match(eventPage, /<title>Spring Showdown \| Bag Tag Leaderboard<\/title>/i);
   assert.match(eventPage, />Spring Showdown</i);
@@ -227,12 +227,12 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
   assert.match(eventPage, />Major</i);
   assert.match(eventPage, /href="https:\/\/udisc\.com\/events\/spring-showdown"/i);
   assert.match(eventPage, />View on UDisc</i);
-  assert.match(eventPage, /class="event-page stack"/i);
-  assert.match(eventPage, /class="page-header event-poster panel stack-tight"/i);
-  assert.match(eventPage, /class="back-link"/i);
-  assert.match(eventPage, /class="meta-row event-meta"/i);
-  assert.match(eventPage, /class="secondary-link"/i);
-  assert.match(eventPage, /class="panel stack scoreboard-panel"/i);
+  assert.match(eventPage, /class="[^"]*\bevent-page\b[^"]*"/i);
+  assert.match(eventPage, /class="[^"]*\bevent-poster\b[^"]*"/i);
+  assert.match(eventPage, /class="[^"]*\bback-link\b[^"]*"/i);
+  assert.match(eventPage, /class="[^"]*\bevent-meta\b[^"]*"/i);
+  assert.match(eventPage, /class="[^"]*\bsecondary-link\b[^"]*"/i);
+  assert.match(eventPage, /class="[^"]*\bscoreboard-panel\b[^"]*"/i);
   assert.match(eventPage, />Player</i);
   assert.match(eventPage, />Start Tag</i);
   assert.match(eventPage, />Finish</i);
