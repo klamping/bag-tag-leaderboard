@@ -48,7 +48,7 @@ table a {
 }
 
 .page-shell {
-  width: min(100%, 74rem);
+  width: min(100%, 50rem);
   margin: 0 auto;
   padding: 1.25rem;
 }
@@ -162,6 +162,8 @@ h2 {
 .leaderboard-primary {
   display: grid;
   gap: 0.2rem;
+  border-left: 2px dashed rgba(18, 48, 74, 0.22);
+  padding-left: 1rem;
 }
 
 .leaderboard-name {
@@ -325,9 +327,9 @@ th .th-label {
   }
 
   .leaderboard-row {
-    flex-direction: row;
+    flex-direction: row-reverse;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
   }
 
   .event-list {

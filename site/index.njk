@@ -3,7 +3,7 @@ layout: layout.njk
 pageTitle: 2026 Rochester, MN Bag Tag
 ---
 <header class="page-header hero panel stack">
-  <p class="eyebrow">League Standings</p>
+  <p class="eyebrow">Rochester, MN</p>
   <h1>{{ site.title }}</h1>
 </header>
 
@@ -20,7 +20,7 @@ pageTitle: 2026 Rochester, MN Bag Tag
             <span class="leaderboard-name">{{ row.playerName }}</span>
             <span class="leaderboard-events">{{ row.eventsPlayed }} event{% if row.eventsPlayed !== 1 %}s{% endif %}</span>
           </div>
-          <span class="leaderboard-points">{{ row.seasonPoints }} pts</span>
+          <span class="leaderboard-points">{{ row.seasonPoints }} points</span>
         </li>
       {% endfor %}
     </ol>

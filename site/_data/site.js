@@ -1,3 +1,3 @@
 module.exports = {
-  title: "Bag Tag Leaderboard",
+  title: "2026 Bag Tag",
 };
