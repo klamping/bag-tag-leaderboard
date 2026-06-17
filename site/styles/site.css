@@ -88,8 +88,7 @@ table a {
 
 .hero h1,
 .event-poster h1,
-h2,
-.leaderboard-points {
+h2 {
   font-family: "Arial Black", Impact, Haettenschweiler, "Arial Narrow Bold", Arial, sans-serif;
   letter-spacing: 0.02em;
 }
@@ -132,37 +131,93 @@ h2 {
   margin-top: 0.5rem;
 }
 
-.leaderboard-list,
 .event-list {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.leaderboard-list,
 .event-list,
 .event-page {
   display: grid;
   gap: .5rem;
 }
 
-.leaderboard-row,
 .event-tile {
   background: #fffef9;
 }
 
-.leaderboard-card {
-  padding: 0;
-  overflow: hidden;
+.leaderboard-table-scroll {
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.leaderboard-table {
+  min-width: 42rem;
+}
+
+.leaderboard-table > thead th,
+.leaderboard-table > tbody > tr > :is(th, td) {
+  white-space: nowrap;
+}
+
+.leaderboard-table > thead th:not(:nth-child(2)),
+.leaderboard-table > tbody > tr > :is(th, td):not(:nth-child(2)) {
+  text-align: center;
+}
+
+.leaderboard-table > thead th:nth-child(2),
+.leaderboard-table > tbody > tr > :is(th, td):nth-child(2) {
+  text-align: left;
+}
+
+.leaderboard-total-cell,
+.leaderboard-table > tbody > tr > td[data-event-slug] {
+  font-variant-numeric: tabular-nums;
+}
+
+.leaderboard-total-cell {
+  min-width: 5.5rem;
+}
+
+.leaderboard-points-value,
+.leaderboard-points-label {
+  display: block;
+}
+
+.leaderboard-points-value {
+  color: var(--color-orange);
+  font-family: "Arial Black", Impact, Haettenschweiler, "Arial Narrow Bold", Arial, sans-serif;
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.leaderboard-points-label {
+  color: var(--color-ink-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.leaderboard-player-cell {
+  min-width: 16rem;
+}
+
+.leaderboard-breakdown-toggle {
+  display: block;
+}
+
+.leaderboard-name {
+  font-size: 1.15rem;
+  font-weight: 700;
 }
 
 .leaderboard-summary {
   display: flex;
-  flex-direction: row-reverse;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 1.1rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
   cursor: pointer;
   list-style: none;
 }
@@ -171,71 +226,38 @@ h2 {
   display: none;
 }
 
-.leaderboard-card[open] .leaderboard-summary {
-  border-bottom: 1px solid var(--color-line);
-}
-
-.leaderboard-summary-indicator {
-  color: var(--color-ink-soft);
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.leaderboard-summary-indicator .indicator-open {
-  display: none;
-}
-
-.leaderboard-card:not([open]) .leaderboard-summary-indicator .indicator-open {
-  display: none;
-}
-
-.leaderboard-card[open] .leaderboard-summary-indicator {
-  color: var(--color-orange);
-}
-
-.leaderboard-card[open] .leaderboard-summary-indicator .indicator-closed {
-  display: none;
-}
-
-.leaderboard-card[open] .leaderboard-summary-indicator .indicator-open {
-  display: inline;
-}
-
-.leaderboard-row {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 1rem 1.1rem;
-  border-width: 2px;
-}
-
-.leaderboard-primary {
-  display: grid;
-  gap: 0.2rem;
-  border-left: 2px dashed rgba(18, 48, 74, 0.22);
-  padding-left: 1rem;
-}
-
-.leaderboard-name {
-  font-size: 1.15rem;
-  font-weight: 700;
-}
-
 .leaderboard-events {
   color: var(--color-ink-soft);
   font-size: 0.92rem;
 }
 
-.leaderboard-points {
+.leaderboard-summary-indicator {
+  color: var(--color-ink-soft);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.leaderboard-breakdown-toggle:not([open]) .leaderboard-summary-open {
+  display: none;
+}
+
+.leaderboard-breakdown-toggle[open] .leaderboard-summary-closed {
+  display: none;
+}
+
+.leaderboard-breakdown-toggle[open] .leaderboard-summary-indicator {
   color: var(--color-orange);
-  font-size: 1.4rem;
-  line-height: 1;
+}
+
+.leaderboard-breakdown {
+  margin-top: 0.75rem;
+  border-top: 1px solid var(--color-line);
 }
 
 .leaderboard-breakdown .table-scroll {
-  padding: 0 1rem 1rem;
+  padding: 0.75rem 0 0.25rem;
 }
 
 .leaderboard-breakdown table {
@@ -400,16 +422,6 @@ th .th-label {
 
   .panel {
     padding: .75rem 1rem;
-  }
-
-  .leaderboard-card {
-    padding: 0;
-  }
-
-  .leaderboard-row {
-    flex-direction: row-reverse;
-    align-items: center;
-    justify-content: flex-end;
   }
 
   .event-list {
