@@ -47,8 +47,13 @@ node ./bin/bag-tag.js site build
 ```bash
 npm run build
 npm run build:site
+npm run dev
 npm test
 ```
+
+## Development Preview
+
+`npm run dev` loads the canonical store, validates it, builds the public site data model, serves the site locally, and rebuilds when files under `site/` change.
 
 ## Tests
 
