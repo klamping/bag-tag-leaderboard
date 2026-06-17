@@ -49,9 +49,9 @@ eleventyComputed:
               <td>{% if row.eventResult === null %}DNF{% else %}{{ row.eventResult }}{% endif %}</td>
               <td>{{ row.attendance }}</td>
               <td>{{ row.placement }}</td>
-              <td>{{ row.startingTagBonus }}</td>
-              <td>{{ row.tagOneBonus }}</td>
-              <td>{{ row.beatYourTagBonus }}</td>
+              <td>{{ row.startingTagBonusDisplay }}</td>
+              <td>{{ row.tagOneBonusDisplay }}</td>
+              <td>{{ row.beatYourTagBonusDisplay }}</td>
               <td class="total-column">{{ row.eventTotal }}</td>
             </tr>
           {% endfor %}

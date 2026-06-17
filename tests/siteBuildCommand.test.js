@@ -146,8 +146,11 @@ test("buildPublicModel returns homepage and event page models from the canonical
           attendance: 2,
           placement: 8,
           startingTagBonus: 0,
+          startingTagBonusDisplay: "-",
           tagOneBonus: 0,
+          tagOneBonusDisplay: "-",
           beatYourTagBonus: 0,
+          beatYourTagBonusDisplay: "-",
           eventTotal: 10,
         },
       ],
@@ -180,8 +183,11 @@ test("buildPublicModel returns homepage and event page models from the canonical
           attendance: 2,
           placement: 0,
           startingTagBonus: 0,
+          startingTagBonusDisplay: "-",
           tagOneBonus: 0,
+          tagOneBonusDisplay: "-",
           beatYourTagBonus: 0,
+          beatYourTagBonusDisplay: "-",
           eventTotal: 2,
         },
       ],
@@ -218,8 +224,11 @@ test("buildPublicModel returns homepage and event page models from the canonical
           attendance: 2,
           placement: 8,
           startingTagBonus: 0,
+          startingTagBonusDisplay: "-",
           tagOneBonus: 0,
+          tagOneBonusDisplay: "-",
           beatYourTagBonus: 0,
+          beatYourTagBonusDisplay: "-",
           eventTotal: 10,
         },
         {
@@ -230,8 +239,11 @@ test("buildPublicModel returns homepage and event page models from the canonical
           attendance: 2,
           placement: 0,
           startingTagBonus: 0,
+          startingTagBonusDisplay: "-",
           tagOneBonus: 0,
+          tagOneBonusDisplay: "-",
           beatYourTagBonus: 0,
+          beatYourTagBonusDisplay: "-",
           eventTotal: 2,
         },
       ],
@@ -315,8 +327,11 @@ test("buildPublicModel adds homepage event breakdown totals across multiple even
           attendance: 2,
           placement: 8,
           startingTagBonus: 0,
+          startingTagBonusDisplay: "-",
           tagOneBonus: 0,
+          tagOneBonusDisplay: "-",
           beatYourTagBonus: 0,
+          beatYourTagBonusDisplay: "-",
           eventTotal: 10,
         },
         {
@@ -325,8 +340,11 @@ test("buildPublicModel adds homepage event breakdown totals across multiple even
           attendance: 2,
           placement: 5,
           startingTagBonus: 1,
+          startingTagBonusDisplay: 1,
           tagOneBonus: 0,
+          tagOneBonusDisplay: 0,
           beatYourTagBonus: 2,
+          beatYourTagBonusDisplay: 2,
           eventTotal: 10,
         },
       ],
@@ -365,8 +383,11 @@ test("buildPublicModel adds homepage event breakdown totals across multiple even
           attendance: 2,
           placement: 0,
           startingTagBonus: 0,
+          startingTagBonusDisplay: "-",
           tagOneBonus: 0,
+          tagOneBonusDisplay: "-",
           beatYourTagBonus: 0,
+          beatYourTagBonusDisplay: "-",
           eventTotal: 2,
         },
         {
@@ -375,8 +396,11 @@ test("buildPublicModel adds homepage event breakdown totals across multiple even
           attendance: 2,
           placement: 8,
           startingTagBonus: 0,
+          startingTagBonusDisplay: 0,
           tagOneBonus: 1,
+          tagOneBonusDisplay: 1,
           beatYourTagBonus: 0,
+          beatYourTagBonusDisplay: 0,
           eventTotal: 11,
         },
       ],
@@ -557,8 +581,11 @@ test("buildPublicModel excludes out-of-season events from homepage breakdowns an
           attendance: 2,
           placement: 8,
           startingTagBonus: 0,
+          startingTagBonusDisplay: "-",
           tagOneBonus: 0,
+          tagOneBonusDisplay: "-",
           beatYourTagBonus: 0,
+          beatYourTagBonusDisplay: "-",
           eventTotal: 10,
         },
       ],
@@ -591,8 +618,11 @@ test("buildPublicModel excludes out-of-season events from homepage breakdowns an
           attendance: 2,
           placement: 0,
           startingTagBonus: 0,
+          startingTagBonusDisplay: "-",
           tagOneBonus: 0,
+          tagOneBonusDisplay: "-",
           beatYourTagBonus: 0,
+          beatYourTagBonusDisplay: "-",
           eventTotal: 2,
         },
       ],
@@ -633,8 +663,11 @@ test("buildPublicModel hides bootstrap-event tags and forces tag-derived display
       attendance: 2,
       placement: 8,
       startingTagBonus: 0,
+      startingTagBonusDisplay: "-",
       tagOneBonus: 0,
+      tagOneBonusDisplay: "-",
       beatYourTagBonus: 0,
+      beatYourTagBonusDisplay: "-",
       eventTotal: 10,
     },
     {
@@ -645,11 +678,16 @@ test("buildPublicModel hides bootstrap-event tags and forces tag-derived display
       attendance: 2,
       placement: 0,
       startingTagBonus: 0,
+      startingTagBonusDisplay: "-",
       tagOneBonus: 0,
+      tagOneBonusDisplay: "-",
       beatYourTagBonus: 0,
+      beatYourTagBonusDisplay: "-",
       eventTotal: 2,
     },
   ]);
+
+  assert.equal(model.eventPages[0].scoreboard[0].startingTagBonus, 0);
 });
 
 test("buildPublicModel sanitizes homepage seasonPoints for major bootstrap events", () => {
@@ -680,8 +718,11 @@ test("buildPublicModel sanitizes homepage seasonPoints for major bootstrap event
           attendance: 2,
           placement: 8,
           startingTagBonus: 0,
+          startingTagBonusDisplay: "-",
           tagOneBonus: 0,
+          tagOneBonusDisplay: "-",
           beatYourTagBonus: 0,
+          beatYourTagBonusDisplay: "-",
           eventTotal: 20,
         },
       ],
@@ -714,8 +755,11 @@ test("buildPublicModel sanitizes homepage seasonPoints for major bootstrap event
           attendance: 2,
           placement: 0,
           startingTagBonus: 0,
+          startingTagBonusDisplay: "-",
           tagOneBonus: 0,
+          tagOneBonusDisplay: "-",
           beatYourTagBonus: 0,
+          beatYourTagBonusDisplay: "-",
           eventTotal: 4,
         },
       ],
@@ -1074,6 +1118,87 @@ test("siteBuildCommand leaves missed homepage event overview cells blank", async
 
   assert.match(homepage, /<td\b[^>]*data-event-slug="summer-sizzler"[^>]*><\/td>/i);
   assert.doesNotMatch(homepage, /<td\b[^>]*data-event-slug="summer-sizzler"[^>]*>0<\/td>/i);
+});
+
+test("siteBuildCommand renders kickoff tag bonus zeros as dashes", async (t) => {
+  const tempDirectory = await createTempBuildDirectory(t, "site-build-kickoff-tag-bonus-dash-");
+  const store = createStore();
+
+  store.events.items.push({
+    id: "event_0002",
+    slug: "summer-sizzler",
+    name: "Summer Sizzler",
+    eventDate: "2026-05-10",
+    isMajor: false,
+    udiscUrl: "https://udisc.com/events/summer-sizzler",
+    importPath: "data/imports/summer-sizzler.json",
+    resultIds: ["result_0003", "result_0004"],
+    createdAt: "2026-06-01T00:00:00.000Z",
+    updatedAt: "2026-06-01T00:00:00.000Z",
+  });
+
+  store.results.items.push(
+    {
+      id: "result_0003",
+      eventId: "event_0002",
+      playerId: "player_0001",
+      finishPlace: 2,
+      startingTag: 5,
+      attendancePoints: 2,
+      placementPoints: 5,
+      startingTagBonusPoints: 1,
+      tagOneBonusPoints: 0,
+      beatYourTagBonusPoints: 2,
+      eventTotalPoints: 10,
+      createdAt: "2026-06-01T00:00:00.000Z",
+      updatedAt: "2026-06-01T00:00:00.000Z",
+    },
+    {
+      id: "result_0004",
+      eventId: "event_0002",
+      playerId: "player_0002",
+      finishPlace: 1,
+      startingTag: 4,
+      attendancePoints: 2,
+      placementPoints: 8,
+      startingTagBonusPoints: 0,
+      tagOneBonusPoints: 1,
+      beatYourTagBonusPoints: 0,
+      eventTotalPoints: 11,
+      createdAt: "2026-06-01T00:00:00.000Z",
+      updatedAt: "2026-06-01T00:00:00.000Z",
+    }
+  );
+
+  const result = await siteBuildCommand({
+    baseDirectory: tempDirectory,
+    projectDirectory: path.join(__dirname, ".."),
+    io: {
+      writeStdout: () => {},
+      writeStderr: () => {},
+    },
+    loadCanonicalStore: async () => store,
+  });
+
+  assert.equal(result.exitCode, 0);
+
+  const homepage = await fs.readFile(path.join(tempDirectory, "dist", "index.html"), "utf8");
+  const eventPage = await fs.readFile(
+    path.join(tempDirectory, "dist", "events", "spring-showdown", "index.html"),
+    "utf8"
+  );
+  const nonKickoffEventPage = await fs.readFile(
+    path.join(tempDirectory, "dist", "events", "summer-sizzler", "index.html"),
+    "utf8"
+  );
+
+  assert.match(homepage, />-<\/td>\s*<td>-<\/td>\s*<td>-<\/td>/i);
+  assert.match(homepage, />1<\/td>\s*<td>0<\/td>\s*<td>2<\/td>\s*<td>10<\/td>/i);
+  assert.doesNotMatch(homepage, />1<\/td>\s*<td>-<\/td>\s*<td>2<\/td>\s*<td>10<\/td>/i);
+  assert.match(eventPage, />-<\/td>\s*<td>-<\/td>\s*<td>-<\/td>\s*<td class="total-column">10<\/td>/i);
+  assert.doesNotMatch(eventPage, />0<\/td>\s*<td>0<\/td>\s*<td>0<\/td>\s*<td class="total-column">10<\/td>/i);
+  assert.match(nonKickoffEventPage, />1<\/td>\s*<td>0<\/td>\s*<td>2<\/td>\s*<td class="total-column">10<\/td>/i);
+  assert.doesNotMatch(nonKickoffEventPage, />1<\/td>\s*<td>-<\/td>\s*<td>2<\/td>\s*<td class="total-column">10<\/td>/i);
 });
 
 test("siteBuildCommand renders decoded event-page player names in displayed order", async (t) => {
