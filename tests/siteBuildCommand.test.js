@@ -218,6 +218,112 @@ test("buildPublicModel hides bootstrap-event tags and forces tag-derived display
   ]);
 });
 
+test("buildPublicModel decodes HTML entities in event-page player names at display time", () => {
+  const store = createStore();
+  store.players.items[0].name = "Alice &amp; Smith";
+
+  const model = buildPublicModel(store);
+
+  assert.equal(store.players.items[0].name, "Alice &amp; Smith");
+  assert.equal(model.eventPages[0].scoreboard[0].playerName, "Alice & Smith");
+});
+
+test("buildPublicModel decodes HTML entities in homepage leaderboard player names at display time", () => {
+  const store = createStore();
+  store.players.items[0].name = "Alice &amp; Smith";
+
+  const model = buildPublicModel(store);
+
+  assert.equal(store.players.items[0].name, "Alice &amp; Smith");
+  assert.equal(model.homepage.leaderboardRows[0].playerName, "Alice & Smith");
+});
+
+test("buildPublicModel sorts tied homepage leaderboard rows by decoded player names", () => {
+  const store = createStore();
+  store.players.items[0].name = "A&#122;";
+  store.players.items[1].name = "Ab";
+  store.results.items[1].eventTotalPoints = 10;
+
+  const model = buildPublicModel(store);
+
+  assert.deepEqual(
+    model.homepage.leaderboardRows.map((row) => row.playerName),
+    ["Ab", "Az"]
+  );
+});
+
+test("buildPublicModel leaves malformed numeric HTML entities unchanged in event-page player names", () => {
+  const store = createStore();
+  store.players.items[0].name = "Alice &#x110000; Smith";
+
+  const model = buildPublicModel(store);
+
+  assert.equal(model.eventPages[0].scoreboard[0].playerName, "Alice &#x110000; Smith");
+});
+
+test("buildPublicModel leaves semicolonless malformed numeric HTML entities unchanged in event-page player names", () => {
+  const store = createStore();
+  store.players.items[0].name = "Alice &#x110000 Smith";
+
+  const model = buildPublicModel(store);
+
+  assert.equal(model.eventPages[0].scoreboard[0].playerName, "Alice &#x110000 Smith");
+});
+
+test("buildPublicModel leaves surrogate and null numeric HTML entities unchanged in event-page player names", () => {
+  const store = createStore();
+  store.players.items[0].name = "Alice &#55296;";
+  store.players.items[1].name = "Bob &#0;";
+  store.results.items[1].finishPlace = 1;
+
+  const model = buildPublicModel(store);
+
+  assert.deepEqual(
+    model.eventPages[0].scoreboard.map((row) => row.playerName),
+    ["Alice &#55296;", "Bob &#0;"]
+  );
+});
+
+test("buildPublicModel preserves placeholder-like source text while restoring malformed numeric HTML entities", () => {
+  const store = createStore();
+  store.players.items[0].name = "Alice __MALFORMED_HTML_ENTITY_0__ &#x110000; Smith";
+
+  const model = buildPublicModel(store);
+
+  assert.equal(
+    model.eventPages[0].scoreboard[0].playerName,
+    "Alice __MALFORMED_HTML_ENTITY_0__ &#x110000; Smith"
+  );
+});
+
+test("buildPublicModel sorts equal-finish event-page rows by decoded player names", () => {
+  const store = createStore();
+  store.players.items[0].name = "A&#122;";
+  store.players.items[1].name = "Ab";
+  store.results.items[1].finishPlace = 1;
+
+  const model = buildPublicModel(store);
+
+  assert.deepEqual(
+    model.eventPages[0].scoreboard.map((row) => row.playerName),
+    ["Ab", "Az"]
+  );
+});
+
+test("buildPublicModel decodes mixed HTML entities only once in event-page player names", () => {
+  const store = createStore();
+  store.players.items[0].name = "A&amp;#122;";
+  store.players.items[1].name = "&amp;lt;tag&amp;gt;";
+  store.results.items[1].finishPlace = 1;
+
+  const model = buildPublicModel(store);
+
+  assert.deepEqual(
+    model.eventPages[0].scoreboard.map((row) => row.playerName),
+    ["&lt;tag&gt;", "A&#122;"]
+  );
+});
+
 test("siteBuildCommand validates the canonical store and returns the public model in an isolated build directory", async (t) => {
   const stdout = [];
   const tempDirectory = await createTempBuildDirectory(t, "site-build-validate-");
@@ -321,6 +427,129 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
   assert.match(stylesheet, /\.hero,\s*\.event-poster\s*\{/i);
   assert.match(stylesheet, /\.event-tile\s*\{/i);
   assert.match(stylesheet, /\.scoreboard-panel\s*table/i);
+});
+
+test("siteBuildCommand renders decoded event-page player names in displayed order", async (t) => {
+  const tempDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "site-build-decoded-names-"));
+
+  t.after(async () => {
+    await fs.rm(tempDirectory, { recursive: true, force: true });
+  });
+
+  const store = createStore();
+  store.players.items[0].name = "A&#122;";
+  store.players.items[1].name = "Ab";
+  store.results.items[1].finishPlace = 1;
+
+  const result = await siteBuildCommand({
+    baseDirectory: tempDirectory,
+    projectDirectory: path.join(__dirname, ".."),
+    io: {
+      writeStdout: () => {},
+      writeStderr: () => {},
+    },
+    loadCanonicalStore: async () => store,
+  });
+
+  assert.equal(result.exitCode, 0);
+
+  const eventPage = await fs.readFile(
+    path.join(tempDirectory, "dist", "events", "spring-showdown", "index.html"),
+    "utf8"
+  );
+
+  assert.match(eventPage, />Ab</i);
+  assert.match(eventPage, />Az</i);
+  assert.equal(eventPage.indexOf(">Ab<") < eventPage.indexOf(">Az<"), true);
+});
+
+test("siteBuildCommand renders named HTML entities in event-page player names", async (t) => {
+  const tempDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "site-build-named-entities-"));
+
+  t.after(async () => {
+    await fs.rm(tempDirectory, { recursive: true, force: true });
+  });
+
+  const store = createStore();
+  store.players.items[0].name = "Andr&eacute;";
+
+  const result = await siteBuildCommand({
+    baseDirectory: tempDirectory,
+    projectDirectory: path.join(__dirname, ".."),
+    io: {
+      writeStdout: () => {},
+      writeStderr: () => {},
+    },
+    loadCanonicalStore: async () => store,
+  });
+
+  assert.equal(result.exitCode, 0);
+
+  const eventPage = await fs.readFile(
+    path.join(tempDirectory, "dist", "events", "spring-showdown", "index.html"),
+    "utf8"
+  );
+
+  assert.match(eventPage, />André</i);
+});
+
+test("siteBuildCommand renders decoded homepage leaderboard player names without double-encoding source entities", async (t) => {
+  const tempDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "site-build-homepage-decoded-names-"));
+
+  t.after(async () => {
+    await fs.rm(tempDirectory, { recursive: true, force: true });
+  });
+
+  const store = createStore();
+  store.players.items[0].name = "Alice &amp; Smith";
+
+  const result = await siteBuildCommand({
+    baseDirectory: tempDirectory,
+    projectDirectory: path.join(__dirname, ".."),
+    io: {
+      writeStdout: () => {},
+      writeStderr: () => {},
+    },
+    loadCanonicalStore: async () => store,
+  });
+
+  assert.equal(result.exitCode, 0);
+
+  const homepage = await fs.readFile(path.join(tempDirectory, "dist", "index.html"), "utf8");
+
+  assert.match(homepage, /Alice &amp; Smith/i);
+  assert.doesNotMatch(homepage, /Alice &amp;amp; Smith/i);
+});
+
+test("siteBuildCommand renders tied homepage leaderboard rows in decoded visible order", async (t) => {
+  const tempDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "site-build-homepage-order-"));
+
+  t.after(async () => {
+    await fs.rm(tempDirectory, { recursive: true, force: true });
+  });
+
+  const store = createStore();
+  store.players.items[0].name = "A&#122;";
+  store.players.items[1].name = "Ab";
+  store.results.items[1].eventTotalPoints = 10;
+
+  const result = await siteBuildCommand({
+    baseDirectory: tempDirectory,
+    projectDirectory: path.join(__dirname, ".."),
+    io: {
+      writeStdout: () => {},
+      writeStderr: () => {},
+    },
+    loadCanonicalStore: async () => store,
+  });
+
+  assert.equal(result.exitCode, 0);
+
+  const homepage = await fs.readFile(path.join(tempDirectory, "dist", "index.html"), "utf8");
+
+  assert.match(homepage, />Ab</i);
+  assert.match(homepage, />Az</i);
+  assert.equal(homepage.indexOf(">Ab<") < homepage.indexOf(">Az<"), true);
 });
 
 test("siteBuildCommand renders a single empty-state message when no events exist", async (t) => {
