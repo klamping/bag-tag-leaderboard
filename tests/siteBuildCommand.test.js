@@ -274,7 +274,7 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
   assert.match(eventPage, />DNF</i);
 
   assert.match(stylesheet, /--color-sand:/i);
-  assert.match(stylesheet, /\.hero\s*\{/i);
+  assert.match(stylesheet, /\.hero,\s*\.event-poster\s*\{/i);
   assert.match(stylesheet, /\.event-tile\s*\{/i);
   assert.match(stylesheet, /\.scoreboard-panel\s*table/i);
 });
