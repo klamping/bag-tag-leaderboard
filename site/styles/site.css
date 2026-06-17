@@ -151,6 +151,56 @@ h2 {
   background: #fffef9;
 }
 
+.leaderboard-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.leaderboard-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.1rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.leaderboard-summary::-webkit-details-marker {
+  display: none;
+}
+
+.leaderboard-card[open] .leaderboard-summary {
+  border-bottom: 1px solid var(--color-line);
+}
+
+.leaderboard-summary-indicator {
+  color: var(--color-ink-soft);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.leaderboard-summary-indicator .indicator-open {
+  display: none;
+}
+
+.leaderboard-card:not([open]) .leaderboard-summary-indicator .indicator-open {
+  display: none;
+}
+
+.leaderboard-card[open] .leaderboard-summary-indicator {
+  color: var(--color-orange);
+}
+
+.leaderboard-card[open] .leaderboard-summary-indicator .indicator-closed {
+  display: none;
+}
+
+.leaderboard-card[open] .leaderboard-summary-indicator .indicator-open {
+  display: inline;
+}
+
 .leaderboard-row {
   display: flex;
   flex-direction: column;
@@ -180,6 +230,30 @@ h2 {
   color: var(--color-orange);
   font-size: 1.4rem;
   line-height: 1;
+}
+
+.leaderboard-breakdown .table-scroll {
+  padding: 0 1rem 1rem;
+}
+
+.leaderboard-breakdown table {
+  min-width: 48rem;
+}
+
+.leaderboard-breakdown tbody tr:last-child {
+  font-weight: 700;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .event-tile {
@@ -324,6 +398,10 @@ th .th-label {
 
   .panel {
     padding: .75rem 1rem;
+  }
+
+  .leaderboard-card {
+    padding: 0;
   }
 
   .leaderboard-row {

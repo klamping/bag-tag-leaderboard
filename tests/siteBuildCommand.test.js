@@ -122,12 +122,52 @@ test("buildPublicModel returns homepage and event page models from the canonical
       playerName: "Alice Smith",
       eventsPlayed: 1,
       seasonPoints: 10,
+      eventBreakdown: [
+        {
+          eventName: "Spring Showdown",
+          eventSlug: "spring-showdown",
+          attendance: 2,
+          placement: 8,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          eventTotal: 10,
+        },
+      ],
+      totals: {
+        attendance: 2,
+        placement: 8,
+        startingTagBonus: 0,
+        tagOneBonus: 0,
+        beatYourTagBonus: 0,
+        eventTotal: 10,
+      },
     },
     {
       playerId: "player_0002",
       playerName: "Bob Jones",
       eventsPlayed: 1,
-      seasonPoints: 5,
+      seasonPoints: 2,
+      eventBreakdown: [
+        {
+          eventName: "Spring Showdown",
+          eventSlug: "spring-showdown",
+          attendance: 2,
+          placement: 0,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          eventTotal: 2,
+        },
+      ],
+      totals: {
+        attendance: 2,
+        placement: 0,
+        startingTagBonus: 0,
+        tagOneBonus: 0,
+        beatYourTagBonus: 0,
+        eventTotal: 2,
+      },
     },
   ]);
   assert.deepEqual(model.homepage.events, [
@@ -170,6 +210,236 @@ test("buildPublicModel returns homepage and event page models from the canonical
           eventTotal: 2,
         },
       ],
+    },
+  ]);
+});
+
+test("buildPublicModel adds homepage event breakdown totals across multiple events", () => {
+  const store = createStore();
+  store.events.items.push({
+    id: "event_0002",
+    slug: "summer-sizzler",
+    name: "Summer Sizzler",
+    eventDate: "2026-05-10",
+    isMajor: false,
+    udiscUrl: "https://udisc.com/events/summer-sizzler",
+    importPath: "data/imports/summer-sizzler.json",
+    resultIds: ["result_0003", "result_0004"],
+    createdAt: "2026-06-01T00:00:00.000Z",
+    updatedAt: "2026-06-01T00:00:00.000Z",
+  });
+  store.results.items.push(
+    {
+      id: "result_0003",
+      eventId: "event_0002",
+      playerId: "player_0001",
+      finishPlace: 2,
+      startingTag: 5,
+      attendancePoints: 2,
+      placementPoints: 5,
+      startingTagBonusPoints: 1,
+      tagOneBonusPoints: 0,
+      beatYourTagBonusPoints: 2,
+      eventTotalPoints: 10,
+      createdAt: "2026-06-01T00:00:00.000Z",
+      updatedAt: "2026-06-01T00:00:00.000Z",
+    },
+    {
+      id: "result_0004",
+      eventId: "event_0002",
+      playerId: "player_0002",
+      finishPlace: 1,
+      startingTag: 3,
+      attendancePoints: 2,
+      placementPoints: 8,
+      startingTagBonusPoints: 0,
+      tagOneBonusPoints: 1,
+      beatYourTagBonusPoints: 0,
+      eventTotalPoints: 11,
+      createdAt: "2026-06-01T00:00:00.000Z",
+      updatedAt: "2026-06-01T00:00:00.000Z",
+    }
+  );
+
+  const model = buildPublicModel(store);
+
+  assert.deepEqual(model.homepage.leaderboardRows, [
+    {
+      playerId: "player_0001",
+      playerName: "Alice Smith",
+      eventsPlayed: 2,
+      seasonPoints: 20,
+      eventBreakdown: [
+        {
+          eventName: "Spring Showdown",
+          eventSlug: "spring-showdown",
+          attendance: 2,
+          placement: 8,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          eventTotal: 10,
+        },
+        {
+          eventName: "Summer Sizzler",
+          eventSlug: "summer-sizzler",
+          attendance: 2,
+          placement: 5,
+          startingTagBonus: 1,
+          tagOneBonus: 0,
+          beatYourTagBonus: 2,
+          eventTotal: 10,
+        },
+      ],
+      totals: {
+        attendance: 4,
+        placement: 13,
+        startingTagBonus: 1,
+        tagOneBonus: 0,
+        beatYourTagBonus: 2,
+        eventTotal: 20,
+      },
+    },
+    {
+      playerId: "player_0002",
+      playerName: "Bob Jones",
+      eventsPlayed: 2,
+      seasonPoints: 13,
+      eventBreakdown: [
+        {
+          eventName: "Spring Showdown",
+          eventSlug: "spring-showdown",
+          attendance: 2,
+          placement: 0,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          eventTotal: 2,
+        },
+        {
+          eventName: "Summer Sizzler",
+          eventSlug: "summer-sizzler",
+          attendance: 2,
+          placement: 8,
+          startingTagBonus: 0,
+          tagOneBonus: 1,
+          beatYourTagBonus: 0,
+          eventTotal: 11,
+        },
+      ],
+      totals: {
+        attendance: 4,
+        placement: 8,
+        startingTagBonus: 0,
+        tagOneBonus: 1,
+        beatYourTagBonus: 0,
+        eventTotal: 13,
+      },
+    },
+  ]);
+});
+
+test("buildPublicModel excludes out-of-season events from homepage breakdowns and totals", () => {
+  const store = createStore();
+  store.events.items.push({
+    id: "event_0002",
+    slug: "winter-warmup",
+    name: "Winter Warmup",
+    eventDate: "2027-01-15",
+    isMajor: false,
+    udiscUrl: "https://udisc.com/events/winter-warmup",
+    importPath: "data/imports/winter-warmup.json",
+    resultIds: ["result_0003", "result_0004"],
+    createdAt: "2026-06-01T00:00:00.000Z",
+    updatedAt: "2026-06-01T00:00:00.000Z",
+  });
+  store.results.items.push(
+    {
+      id: "result_0003",
+      eventId: "event_0002",
+      playerId: "player_0001",
+      finishPlace: 1,
+      startingTag: 4,
+      attendancePoints: 2,
+      placementPoints: 8,
+      startingTagBonusPoints: 1,
+      tagOneBonusPoints: 0,
+      beatYourTagBonusPoints: 0,
+      eventTotalPoints: 11,
+      createdAt: "2026-06-01T00:00:00.000Z",
+      updatedAt: "2026-06-01T00:00:00.000Z",
+    },
+    {
+      id: "result_0004",
+      eventId: "event_0002",
+      playerId: "player_0002",
+      finishPlace: 2,
+      startingTag: 1,
+      attendancePoints: 2,
+      placementPoints: 5,
+      startingTagBonusPoints: 0,
+      tagOneBonusPoints: 1,
+      beatYourTagBonusPoints: 0,
+      eventTotalPoints: 8,
+      createdAt: "2026-06-01T00:00:00.000Z",
+      updatedAt: "2026-06-01T00:00:00.000Z",
+    }
+  );
+
+  const model = buildPublicModel(store);
+
+  assert.deepEqual(model.homepage.leaderboardRows, [
+    {
+      playerId: "player_0001",
+      playerName: "Alice Smith",
+      eventsPlayed: 1,
+      seasonPoints: 10,
+      eventBreakdown: [
+        {
+          eventName: "Spring Showdown",
+          eventSlug: "spring-showdown",
+          attendance: 2,
+          placement: 8,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          eventTotal: 10,
+        },
+      ],
+      totals: {
+        attendance: 2,
+        placement: 8,
+        startingTagBonus: 0,
+        tagOneBonus: 0,
+        beatYourTagBonus: 0,
+        eventTotal: 10,
+      },
+    },
+    {
+      playerId: "player_0002",
+      playerName: "Bob Jones",
+      eventsPlayed: 1,
+      seasonPoints: 2,
+      eventBreakdown: [
+        {
+          eventName: "Spring Showdown",
+          eventSlug: "spring-showdown",
+          attendance: 2,
+          placement: 0,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          eventTotal: 2,
+        },
+      ],
+      totals: {
+        attendance: 2,
+        placement: 0,
+        startingTagBonus: 0,
+        tagOneBonus: 0,
+        beatYourTagBonus: 0,
+        eventTotal: 2,
+      },
     },
   ]);
 });
@@ -218,6 +488,69 @@ test("buildPublicModel hides bootstrap-event tags and forces tag-derived display
   ]);
 });
 
+test("buildPublicModel sanitizes homepage seasonPoints for major bootstrap events", () => {
+  const store = createStore();
+  store.events.items[0].eventDate = "2026-04-01";
+  store.events.items[0].isMajor = true;
+
+  const model = buildPublicModel(store);
+
+  assert.deepEqual(model.homepage.leaderboardRows, [
+    {
+      playerId: "player_0001",
+      playerName: "Alice Smith",
+      eventsPlayed: 1,
+      seasonPoints: 20,
+      eventBreakdown: [
+        {
+          eventName: "Spring Showdown",
+          eventSlug: "spring-showdown",
+          attendance: 2,
+          placement: 8,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          eventTotal: 20,
+        },
+      ],
+      totals: {
+        attendance: 2,
+        placement: 8,
+        startingTagBonus: 0,
+        tagOneBonus: 0,
+        beatYourTagBonus: 0,
+        eventTotal: 20,
+      },
+    },
+    {
+      playerId: "player_0002",
+      playerName: "Bob Jones",
+      eventsPlayed: 1,
+      seasonPoints: 4,
+      eventBreakdown: [
+        {
+          eventName: "Spring Showdown",
+          eventSlug: "spring-showdown",
+          attendance: 2,
+          placement: 0,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
+          beatYourTagBonus: 0,
+          eventTotal: 4,
+        },
+      ],
+      totals: {
+        attendance: 2,
+        placement: 0,
+        startingTagBonus: 0,
+        tagOneBonus: 0,
+        beatYourTagBonus: 0,
+        eventTotal: 4,
+      },
+    },
+  ]);
+});
+
 test("buildPublicModel decodes HTML entities in event-page player names at display time", () => {
   const store = createStore();
   store.players.items[0].name = "Alice &amp; Smith";
@@ -242,7 +575,7 @@ test("buildPublicModel sorts tied homepage leaderboard rows by decoded player na
   const store = createStore();
   store.players.items[0].name = "A&#122;";
   store.players.items[1].name = "Ab";
-  store.results.items[1].eventTotalPoints = 10;
+  store.results.items[1].placementPoints = 8;
 
   const model = buildPublicModel(store);
 
@@ -359,6 +692,50 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
 
   const store = createStore();
   store.events.items[0].isMajor = true;
+  store.events.items.push({
+    id: "event_0002",
+    slug: "summer-sizzler",
+    name: "Summer Sizzler",
+    eventDate: "2026-05-10",
+    isMajor: false,
+    udiscUrl: "https://udisc.com/events/summer-sizzler",
+    importPath: "data/imports/summer-sizzler.json",
+    resultIds: ["result_0003", "result_0004"],
+    createdAt: "2026-06-01T00:00:00.000Z",
+    updatedAt: "2026-06-01T00:00:00.000Z",
+  });
+  store.results.items.push(
+    {
+      id: "result_0003",
+      eventId: "event_0002",
+      playerId: "player_0001",
+      finishPlace: 2,
+      startingTag: 5,
+      attendancePoints: 2,
+      placementPoints: 5,
+      startingTagBonusPoints: 1,
+      tagOneBonusPoints: 0,
+      beatYourTagBonusPoints: 2,
+      eventTotalPoints: 10,
+      createdAt: "2026-06-01T00:00:00.000Z",
+      updatedAt: "2026-06-01T00:00:00.000Z",
+    },
+    {
+      id: "result_0004",
+      eventId: "event_0002",
+      playerId: "player_0002",
+      finishPlace: 1,
+      startingTag: 3,
+      attendancePoints: 2,
+      placementPoints: 8,
+      startingTagBonusPoints: 0,
+      tagOneBonusPoints: 1,
+      beatYourTagBonusPoints: 0,
+      eventTotalPoints: 11,
+      createdAt: "2026-06-01T00:00:00.000Z",
+      updatedAt: "2026-06-01T00:00:00.000Z",
+    }
+  );
 
   const result = await siteBuildCommand({
     baseDirectory: tempDirectory,
@@ -372,7 +749,7 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
 
   assert.equal(result.exitCode, 0);
   assert.equal(result.publicModel.siteTitle, "Bag Tag Leaderboard");
-  assert.match(stdout.join(""), /Built public site for 1 event page/i);
+  assert.match(stdout.join(""), /Built public site for 2 event page/i);
 
   const homepage = await fs.readFile(path.join(tempDirectory, "dist", "index.html"), "utf8");
   const eventPage = await fs.readFile(
@@ -385,12 +762,25 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
   // assert.match(homepage, />Bag Tag Leaderboard</i);
   // assert.match(homepage, />Leaderboard</i);
   // assert.match(homepage, />Events</i);
-  assert.match(homepage, /href="\/events\/spring-showdown\/"/i);
-  assert.match(homepage, elementWithClassPattern("body", "site-body"));
-  assert.match(homepage, elementWithClassPattern("header", "hero"));
-  assert.match(homepage, elementWithClassPattern("div", "section-heading"));
-  assert.match(homepage, elementWithClassPattern("li", "leaderboard-row"));
-  assert.match(homepage, elementWithClassPattern("li", "event-tile"));
+  assert.match(homepage, elementWithClassPattern("details", "leaderboard-card"));
+  assert.match(homepage, elementWithClassPattern("summary", "leaderboard-summary"));
+  assert.doesNotMatch(
+    homepage,
+    /<summary\b[^>]*>[\s\S]*?<div\b[^>]*class="[^"]*\bleaderboard-primary\b/i
+  );
+  assert.match(homepage, elementWithClassPattern("span", "leaderboard-primary"));
+  assert.match(homepage, elementWithClassPattern("span", "leaderboard-summary-indicator"));
+  assert.match(homepage, />Show breakdown</i);
+  assert.match(homepage, />Hide breakdown</i);
+  assert.match(homepage, /<details\b[\s\S]*?<table>/i);
+  assert.match(homepage, /<caption\b[^>]*class="[^"]*\bvisually-hidden\b[^"]*"[^>]*>Alice Smith scoring breakdown<\/caption>/i);
+  assert.match(homepage, /href="\/events\/spring-showdown\/"[^>]*>Spring Showdown</i);
+  assert.match(homepage, /href="\/events\/summer-sizzler\/"[^>]*>Summer Sizzler</i);
+  assert.match(homepage, />Totals</i);
+  assert.match(homepage, /20<\/td>/i);
+  assert.match(homepage, />Beat Your Tag Bonus</i);
+  assert.match(homepage, />Tag 1 Bonus</i);
+  assert.match(homepage, elementWithClassPattern("div", "table-scroll"));
 
   // assert.match(eventPage, /<title>Spring Showdown \| Bag Tag Leaderboard<\/title>/i);
   assert.match(eventPage, />Spring Showdown</i);
@@ -424,8 +814,18 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
   assert.match(eventPage, />DNF</i);
 
   assert.match(stylesheet, /--color-sand:/i);
-  assert.match(stylesheet, /\.hero,\s*\.event-poster\s*\{/i);
-  assert.match(stylesheet, /\.event-tile\s*\{/i);
+  assert.match(stylesheet, /\.leaderboard-card\s*\{/i);
+  assert.match(stylesheet, /\.leaderboard-summary\s*\{/i);
+  assert.match(
+    stylesheet,
+    /@media\s*\(min-width:\s*48rem\)\s*\{[\s\S]*?\.leaderboard-card\s*\{\s*padding:\s*0;\s*\}/i
+  );
+  assert.match(stylesheet, /\.leaderboard-summary-indicator\s*\{/i);
+  assert.match(stylesheet, /\.leaderboard-card\[open\]\s+\.leaderboard-summary-indicator\s*\{/i);
+  assert.match(stylesheet, /\.leaderboard-card\[open\][\s\S]*\.indicator-closed/i);
+  assert.match(stylesheet, /\.leaderboard-card:not\(\[open\]\)[\s\S]*\.indicator-open/i);
+  assert.match(stylesheet, /\.leaderboard-breakdown\s+\.table-scroll\s*\{/i);
+  assert.match(stylesheet, /\.visually-hidden\s*\{/i);
   assert.match(stylesheet, /\.scoreboard-panel\s*table/i);
 });
 
@@ -531,7 +931,7 @@ test("siteBuildCommand renders tied homepage leaderboard rows in decoded visible
   const store = createStore();
   store.players.items[0].name = "A&#122;";
   store.players.items[1].name = "Ab";
-  store.results.items[1].eventTotalPoints = 10;
+  store.results.items[1].placementPoints = 8;
 
   const result = await siteBuildCommand({
     baseDirectory: tempDirectory,
@@ -547,9 +947,13 @@ test("siteBuildCommand renders tied homepage leaderboard rows in decoded visible
 
   const homepage = await fs.readFile(path.join(tempDirectory, "dist", "index.html"), "utf8");
 
-  assert.match(homepage, />Ab</i);
-  assert.match(homepage, />Az</i);
-  assert.equal(homepage.indexOf(">Ab<") < homepage.indexOf(">Az<"), true);
+  assert.match(homepage, /<span class="leaderboard-name">Ab<\/span>/i);
+  assert.match(homepage, /<span class="leaderboard-name">Az<\/span>/i);
+  assert.equal(
+    homepage.indexOf('<span class="leaderboard-name">Ab</span>') <
+      homepage.indexOf('<span class="leaderboard-name">Az</span>'),
+    true
+  );
 });
 
 test("siteBuildCommand renders a single empty-state message when no events exist", async (t) => {
