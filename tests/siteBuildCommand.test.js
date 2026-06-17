@@ -92,7 +92,9 @@ async function createTempBuildDirectory(t, prefix = "site-build-") {
 }
 
 function elementWithClassPattern(tagName, className) {
-  return new RegExp(`<${tagName}\\b[^>]*class="(?=[^"]*\\b${className}\\b)[^"]*"`, "i");
+  const safeClassName = escapeRegexLiteral(className);
+
+  return new RegExp(`<${tagName}\\b[^>]*class="(?=[^"]*\\b${safeClassName}\\b)[^"]*"`, "i");
 }
 
 function escapeRegexLiteral(value) {
