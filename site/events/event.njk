@@ -31,14 +31,14 @@ eleventyComputed:
         <thead>
           <tr>
             <th>Player</th>
-            <th>Start Tag</th>
-            <th>Finish</th>
-            <th>Attendance</th>
-            <th>Placement</th>
-            <th>Start Bonus</th>
-            <th>Tag #1</th>
-            <th>Beat Tag</th>
-            <th>Total</th>
+            <th>Starting Tag <span class="th-label">Number</span></th>
+            <th>Finish <span class="th-label">Place</span></th>
+            <th>Attendance <span class="th-label">Points</span></th>
+            <th>Finish Place <span class="th-label">Points</span></th>
+            <th>Starting Tag <span class="th-label">Bonus</span></th>
+            <th>Tag #1 <span class="th-label">Bonus</span></th>
+            <th>"Beat Your Tag" <span class="th-label">Bonus</span></th>
+            <th class="total-column">Total <span class="th-label">Points</span></th>
           </tr>
         </thead>
         <tbody>
@@ -52,7 +52,7 @@ eleventyComputed:
               <td>{{ row.startingTagBonus }}</td>
               <td>{{ row.tagOneBonus }}</td>
               <td>{{ row.beatYourTagBonus }}</td>
-              <td>{{ row.eventTotal }}</td>
+              <td class="total-column">{{ row.eventTotal }}</td>
             </tr>
           {% endfor %}
         </tbody>
