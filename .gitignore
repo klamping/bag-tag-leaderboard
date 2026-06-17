@@ -23,3 +23,5 @@ yarn-error.log*
 # Playwright artifacts
 playwright-report/
 test-results/
+
+.superpowers

@@ -148,7 +148,7 @@ test("buildPublicModel returns homepage and event page models from the canonical
         {
           playerId: "player_0001",
           playerName: "Alice Smith",
-          startingTag: 2,
+          startingTag: null,
           eventResult: 1,
           attendance: 2,
           placement: 8,
@@ -160,16 +160,60 @@ test("buildPublicModel returns homepage and event page models from the canonical
         {
           playerId: "player_0002",
           playerName: "Bob Jones",
-          startingTag: 1,
+          startingTag: null,
           eventResult: null,
           attendance: 2,
           placement: 0,
-          startingTagBonus: 1,
-          tagOneBonus: 2,
+          startingTagBonus: 0,
+          tagOneBonus: 0,
           beatYourTagBonus: 0,
-          eventTotal: 5,
+          eventTotal: 2,
         },
       ],
+    },
+  ]);
+});
+
+test("buildPublicModel hides bootstrap-event tags and forces tag-derived display values to zero", () => {
+  const store = createStore();
+  store.events.items[0].eventDate = "2026-04-01";
+  store.results.items[0].startingTag = 7;
+  store.results.items[0].startingTagBonusPoints = 5;
+  store.results.items[0].tagOneBonusPoints = 2;
+  store.results.items[0].beatYourTagBonusPoints = 3;
+  store.results.items[0].eventTotalPoints = 18;
+  store.results.items[1].startingTag = 1;
+  store.results.items[1].startingTagBonusPoints = 1;
+  store.results.items[1].tagOneBonusPoints = 2;
+  store.results.items[1].beatYourTagBonusPoints = 0;
+  store.results.items[1].eventTotalPoints = 5;
+
+  const model = buildPublicModel(store);
+
+  assert.deepEqual(model.eventPages[0].scoreboard, [
+    {
+      playerId: "player_0001",
+      playerName: "Alice Smith",
+      startingTag: null,
+      eventResult: 1,
+      attendance: 2,
+      placement: 8,
+      startingTagBonus: 0,
+      tagOneBonus: 0,
+      beatYourTagBonus: 0,
+      eventTotal: 10,
+    },
+    {
+      playerId: "player_0002",
+      playerName: "Bob Jones",
+      startingTag: null,
+      eventResult: null,
+      attendance: 2,
+      placement: 0,
+      startingTagBonus: 0,
+      tagOneBonus: 0,
+      beatYourTagBonus: 0,
+      eventTotal: 2,
     },
   ]);
 });

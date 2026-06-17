@@ -277,3 +277,35 @@ test("validateCanonicalStore rejects duplicate entries within an event resultIds
     /event_0001.*duplicate.*result_0001/i
   );
 });
+
+test("validateCanonicalStore allows null starting tags for results on the earliest event", () => {
+  const store = emptyCanonicalStore();
+
+  store.players.items.push(createPlayer());
+  store.events.items.push(createEvent({ eventDate: "2026-04-12", resultIds: ["result_0001"] }));
+  store.results.items.push(createResult({ startingTag: null }));
+
+  assert.doesNotThrow(() => validateCanonicalStore(store));
+});
+
+test("validateCanonicalStore rejects null starting tags for results after the earliest event", () => {
+  const store = emptyCanonicalStore();
+
+  store.players.items.push(createPlayer());
+  store.events.items.push(
+    createEvent({ eventDate: "2026-04-12", resultIds: [] }),
+    createEvent({
+      id: "event_0002",
+      slug: "autumn-open",
+      name: "Autumn Open",
+      eventDate: "2026-05-01",
+      resultIds: ["result_0001"],
+    })
+  );
+  store.results.items.push(createResult({ eventId: "event_0002", startingTag: null }));
+
+  assert.throws(
+    () => validateCanonicalStore(store),
+    /result_0001.*startingTag/i
+  );
+});

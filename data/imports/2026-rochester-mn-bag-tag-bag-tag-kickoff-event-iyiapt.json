@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "data": {
+    "slug": "2026-rochester-mn-bag-tag-bag-tag-kickoff-event-iyiapt",
+    "source": {
+      "type": "udisc",
+      "url": "https://udisc.com/events/2026-rochester-mn-bag-tag-bag-tag-kickoff-event-iyiapT/leaderboard?round=1&view=scores",
+      "fetchedAt": "2026-06-15T22:58:02.626Z"
+    },
+    "event": {
+      "name": "Bag Tag Kickoff Event",
+      "eventDate": "2026-04-19",
+      "isMajor": false
+    },
+    "participants": [
+      {
+        "playerName": "Jacob Boerner",
+        "finishPlace": 1,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Gannon Olson",
+        "finishPlace": 2,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Alan Liudahl",
+        "finishPlace": 3,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Korbin Rollie",
+        "finishPlace": 4,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Wyatt kreel",
+        "finishPlace": 5,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Kevin Lamping",
+        "finishPlace": 6,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Chad Refsland",
+        "finishPlace": 7,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Connor Refsland",
+        "finishPlace": 7,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Michael Merschbrock",
+        "finishPlace": 7,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Jared Pittman",
+        "finishPlace": 10,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Rich Johnson",
+        "finishPlace": 10,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Brenden Worden",
+        "finishPlace": 12,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Stuart Schwenke",
+        "finishPlace": 13,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Carlos Tress",
+        "finishPlace": 14,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Bryan Watson",
+        "finishPlace": 14,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Travis Gergen",
+        "finishPlace": 16,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Matt McIntire",
+        "finishPlace": 17,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      }
+    ]
+  }
+}

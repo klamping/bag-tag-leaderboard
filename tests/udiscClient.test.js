@@ -382,3 +382,25 @@ test("fetchUdiscEventFromUrl normalizes explicit DNF rows from structured payloa
     ],
   });
 });
+
+test("fetchUdiscEventFromUrl parses tied place labels from fallback leaderboard rows", async () => {
+  const result = await fetchUdiscEventFromUrl({
+    leaderboardUrl: "https://udisc.com/events/tied-fallback-event/leaderboard?round=1&view=scores",
+    fetchImpl: async () => ({
+      ok: true,
+      text: async () =>
+        '<html><h1>Tied Fallback Event</h1><time datetime="2026-07-20">July 20</time><table><tr><th>Place</th><th>Name</th><th>Total</th></tr><tr><td>T7</td><td>Connor Refsland</td><td>+6</td></tr><tr><td>T7</td><td>Michael Merschbrock</td><td>+6</td></tr><tr><td>10</td><td>Jared Pittman</td><td>+8</td></tr><tr><td>DNF</td><td>Chris Orke</td><td>+15</td></tr></table></html>',
+    }),
+  });
+
+  assert.deepEqual(result, {
+    name: "Tied Fallback Event",
+    date: "2026-07-20",
+    participants: [
+      { playerName: "Connor Refsland", finishPlace: 7 },
+      { playerName: "Michael Merschbrock", finishPlace: 7 },
+      { playerName: "Jared Pittman", finishPlace: 10 },
+      { playerName: "Chris Orke", finishPlace: null, didNotFinish: true },
+    ],
+  });
+});

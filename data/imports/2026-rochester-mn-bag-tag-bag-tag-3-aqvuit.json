@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "data": {
+    "slug": "2026-rochester-mn-bag-tag-bag-tag-3-aqvuit",
+    "source": {
+      "type": "udisc",
+      "url": "https://udisc.com/events/2026-rochester-mn-bag-tag-bag-tag-3-AQVuIT/leaderboard?round=1&view=scores",
+      "fetchedAt": "2026-06-15T23:09:35.718Z"
+    },
+    "event": {
+      "name": "Bag Tag #3",
+      "eventDate": "2026-05-31",
+      "isMajor": false
+    },
+    "participants": [
+      {
+        "playerName": "Jacob Boerner",
+        "finishPlace": 1,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Kevin Lamping",
+        "finishPlace": 2,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Alan Liudahl",
+        "finishPlace": 3,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Jared Pittman",
+        "finishPlace": 4,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Rich Johnson",
+        "finishPlace": 5,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Drew Wilson",
+        "finishPlace": 6,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Derek Swygman",
+        "finishPlace": 7,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Korbin Rollie",
+        "finishPlace": 8,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Bryan Watson",
+        "finishPlace": 8,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Stuart Schwenke",
+        "finishPlace": 10,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      }
+    ]
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "data": {
+    "slug": "2026-rochester-mn-bag-tag-bag-tag-2-iqwkxm",
+    "source": {
+      "type": "udisc",
+      "url": "https://udisc.com/events/2026-rochester-mn-bag-tag-bag-tag-2-iqwkXM/leaderboard?round=1&view=scores",
+      "fetchedAt": "2026-06-15T23:03:47.033Z"
+    },
+    "event": {
+      "name": "Bag Tag #2",
+      "eventDate": "2026-05-17",
+      "isMajor": false
+    },
+    "participants": [
+      {
+        "playerName": "Jacob Boerner",
+        "finishPlace": 1,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Jared Pittman",
+        "finishPlace": 2,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Gannon Olson",
+        "finishPlace": 3,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Kevin Lamping",
+        "finishPlace": 4,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Alan Liudahl",
+        "finishPlace": 5,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Michael Merschbrock",
+        "finishPlace": 6,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Rich Johnson",
+        "finishPlace": 6,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Derek Swygman",
+        "finishPlace": 8,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Troy &quot;NoGripp&quot; Hauck",
+        "finishPlace": 9,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Seth kim",
+        "finishPlace": 9,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Matt McIntire",
+        "finishPlace": 11,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      }
+    ]
+  }
+}

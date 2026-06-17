@@ -176,7 +176,8 @@ test("eventsImportCommand replaces an existing slug after checkpoint review and 
   ]);
   assert.equal(calls.printImportPreview.length, 1);
   assert.equal(calls.confirmSave.length, 1);
-  assert.equal(stdout.join(""), "Preview spring-showdown (2)\n");
+  assert.match(stdout.join(""), /Preview spring-showdown \(2\)/);
+  assert.match(stdout.join(""), /Saved event spring-showdown/i);
   assert.equal(calls.persistImport.length, 1);
 
   const [{ store, snapshot, importPath }] = calls.persistImport;
@@ -403,12 +404,79 @@ test("eventsImportCommand prompts for the leaderboard url and final save by defa
   const input = new PassThrough();
   const output = new PassThrough();
   const outputChunks = [];
+  const stdout = [];
 
   output.on("data", (chunk) => {
     outputChunks.push(String(chunk));
   });
 
   input.end("https://udisc.com/events/fall-classic/leaderboard\ny\n");
+
+  const { calls, deps } = createCommandDeps({
+    loadCanonicalStore: async () => createStore(),
+    fetchUdiscEventFromUrl: async ({ leaderboardUrl }) => {
+      calls.fetchUdiscEventFromUrl.push({ leaderboardUrl });
+      return {
+        name: "Fall Classic",
+        eventDate: "2026-09-21",
+        participants: [{ playerName: "New Person", finishPlace: 1, didNotFinish: false }],
+      };
+    },
+    promptEventMetadata: async ({ event }) => {
+      calls.promptEventMetadata.push(event);
+      return {
+        ...event,
+        name: "Fall Classic",
+        slug: "fall-classic",
+        eventDate: "2026-09-21",
+        isMajor: false,
+      };
+    },
+  });
+
+  delete deps.promptForLeaderboardUrl;
+  delete deps.confirmSave;
+
+  const result = await eventsImportCommand({
+    ...deps,
+    input,
+    output,
+    io: {
+      writeStdout: (value) => stdout.push(value),
+      writeStderr: () => {},
+    },
+  });
+
+  assert.deepEqual(calls.fetchUdiscEventFromUrl, [
+    { leaderboardUrl: "https://udisc.com/events/fall-classic/leaderboard" },
+  ]);
+  assert.equal(calls.persistImport.length, 1);
+  assert.equal(result.exitCode, 0);
+  assert.match(outputChunks.join(""), /UDisc leaderboard URL/i);
+  assert.match(outputChunks.join(""), /Save import\? \(y\/N\)/i);
+  assert.doesNotMatch(stdout.join(""), /Importing as bootstrap event/i);
+});
+
+test("eventsImportCommand treats an empty event store as a bootstrap import and skips starting tags", async () => {
+  const input = new PassThrough();
+  const output = new PassThrough();
+  const outputChunks = [];
+  const stdout = [];
+
+  output.on("data", (chunk) => {
+    outputChunks.push(String(chunk));
+  });
+
+  input.end([
+    "https://udisc.com/events/fall-classic/leaderboard",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "y",
+  ].join("\n"));
 
   const { calls, deps } = createCommandDeps({
     loadCanonicalStore: async () => ({
@@ -427,6 +495,8 @@ test("eventsImportCommand prompts for the leaderboard url and final save by defa
   });
 
   delete deps.promptForLeaderboardUrl;
+  delete deps.promptEventMetadata;
+  delete deps.reviewImportTable;
   delete deps.confirmSave;
 
   const result = await eventsImportCommand({
@@ -434,22 +504,31 @@ test("eventsImportCommand prompts for the leaderboard url and final save by defa
     input,
     output,
     io: {
-      writeStdout: () => {},
+      writeStdout: (value) => stdout.push(value),
       writeStderr: () => {},
     },
   });
 
-  assert.deepEqual(calls.fetchUdiscEventFromUrl, [
-    { leaderboardUrl: "https://udisc.com/events/fall-classic/leaderboard" },
-  ]);
-  assert.equal(calls.persistImport.length, 1);
   assert.equal(result.exitCode, 0);
-  assert.match(outputChunks.join(""), /UDisc leaderboard URL/i);
-  assert.match(outputChunks.join(""), /Save import\? \(y\/N\)/i);
+  assert.equal(calls.persistImport.length, 1);
+  assert.match(stdout.join(""), /Importing as bootstrap event/i);
+  assert.doesNotMatch(outputChunks.join(""), /Starting tag:/i);
+
+  const [{ store }] = calls.persistImport;
+  assert.equal(store.results.items[0].startingTag, null);
+  assert.equal(store.results.items[0].startingTagBonusPoints, 0);
+  assert.equal(store.results.items[0].tagOneBonusPoints, 0);
+  assert.equal(store.results.items[0].beatYourTagBonusPoints, 0);
 });
 
 test("eventsImportCommand uses the default shared interactive prompts across metadata replacement review and save", async () => {
   const input = new PassThrough();
+  let pauseCalls = 0;
+  const originalPause = input.pause.bind(input);
+  input.pause = (...args) => {
+    pauseCalls += 1;
+    return originalPause(...args);
+  };
   const output = new PassThrough();
   const outputChunks = [];
 
@@ -505,4 +584,5 @@ test("eventsImportCommand uses the default shared interactive prompts across met
   assert.match(outputChunks.join(""), /Finish place \[1\]/i);
   assert.match(outputChunks.join(""), /Starting tag:/i);
   assert.match(outputChunks.join(""), /Save import\? \(y\/N\)/i);
+  assert.ok(pauseCalls >= 1);
 });

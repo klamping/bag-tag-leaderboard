@@ -1,4 +1,82 @@
 {
   "schemaVersion": 1,
-  "items": []
+  "items": [
+    {
+      "id": "event_0003",
+      "slug": "2026-rochester-mn-bag-tag-bag-tag-3-aqvuit",
+      "name": "Bag Tag #3",
+      "eventDate": "2026-05-31",
+      "isMajor": false,
+      "udiscUrl": "https://udisc.com/events/2026-rochester-mn-bag-tag-bag-tag-3-AQVuIT/leaderboard?round=1&view=scores",
+      "importPath": "data/imports/2026-rochester-mn-bag-tag-bag-tag-3-aqvuit.json",
+      "resultIds": [
+        "result_0029",
+        "result_0030",
+        "result_0031",
+        "result_0032",
+        "result_0033",
+        "result_0034",
+        "result_0035",
+        "result_0036",
+        "result_0037",
+        "result_0038"
+      ],
+      "createdAt": "2026-06-15T23:09:35.718Z",
+      "updatedAt": "2026-06-15T23:09:35.718Z"
+    },
+    {
+      "id": "event_0002",
+      "slug": "2026-rochester-mn-bag-tag-bag-tag-2-iqwkxm",
+      "name": "Bag Tag #2",
+      "eventDate": "2026-05-17",
+      "isMajor": false,
+      "udiscUrl": "https://udisc.com/events/2026-rochester-mn-bag-tag-bag-tag-2-iqwkXM/leaderboard?round=1&view=scores",
+      "importPath": "data/imports/2026-rochester-mn-bag-tag-bag-tag-2-iqwkxm.json",
+      "resultIds": [
+        "result_0018",
+        "result_0019",
+        "result_0020",
+        "result_0021",
+        "result_0022",
+        "result_0023",
+        "result_0024",
+        "result_0025",
+        "result_0026",
+        "result_0027",
+        "result_0028"
+      ],
+      "createdAt": "2026-06-15T23:03:47.033Z",
+      "updatedAt": "2026-06-15T23:03:47.033Z"
+    },
+    {
+      "id": "event_0001",
+      "slug": "2026-rochester-mn-bag-tag-bag-tag-kickoff-event-iyiapt",
+      "name": "Bag Tag Kickoff Event",
+      "eventDate": "2026-04-19",
+      "isMajor": false,
+      "udiscUrl": "https://udisc.com/events/2026-rochester-mn-bag-tag-bag-tag-kickoff-event-iyiapT/leaderboard?round=1&view=scores",
+      "importPath": "data/imports/2026-rochester-mn-bag-tag-bag-tag-kickoff-event-iyiapt.json",
+      "resultIds": [
+        "result_0001",
+        "result_0002",
+        "result_0003",
+        "result_0004",
+        "result_0005",
+        "result_0006",
+        "result_0007",
+        "result_0008",
+        "result_0009",
+        "result_0010",
+        "result_0011",
+        "result_0012",
+        "result_0013",
+        "result_0014",
+        "result_0015",
+        "result_0016",
+        "result_0017"
+      ],
+      "createdAt": "2026-06-15T22:58:02.626Z",
+      "updatedAt": "2026-06-15T22:58:02.626Z"
+    }
+  ]
 }
