@@ -369,7 +369,7 @@ h2 {
 table {
   width: 100%;
   min-width: 42rem;
-  border-collapse: separate;
+  border-collapse: collapse;
   border-spacing: 0;
   font-size: 0.95rem;
 }
@@ -388,6 +388,7 @@ th {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
+  border: 1px dotted  var(--color-line);
 }
 th .th-label {
   display: block;
@@ -400,16 +401,12 @@ th .th-label {
   background: rgba(255, 183, 3, 0.08);
 }
 
-.scoreboard-panel table tbody td:last-child,
-.scoreboard-panel table tbody td:nth-child(3),
-.scoreboard-panel table tbody td:nth-child(4),
-.scoreboard-panel table tbody td:nth-child(5),
-.scoreboard-panel table tbody td:nth-child(6),
-.scoreboard-panel table tbody td:nth-child(7),
-.scoreboard-panel table tbody td:nth-child(8),
-.scoreboard-panel table tbody td:nth-child(9) {
+.scoreboard-panel table tbody td:first-child {
+  text-align: left;
+}
+.scoreboard-panel table tbody td {
+  text-align: center;
   font-variant-numeric: tabular-nums;
-  padding-left: 1rem;
 }
 .scoreboard-panel .total-column {
   font-weight: bold;
