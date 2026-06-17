@@ -41,51 +41,55 @@ pageTitle: 2026 Rochester, MN Bag Tag
                     </span>
                   </summary>
                   <span class="leaderboard-events">{{ row.eventsPlayed }} event{% if row.eventsPlayed !== 1 %}s{% endif %}</span>
-                  <div class="leaderboard-breakdown">
-                    <div class="table-scroll">
-                      <table>
-                        <caption class="visually-hidden">{{ row.playerName }} scoring breakdown</caption>
-                        <thead>
-                          <tr>
-                            <th scope="col">Event</th>
-                            <th scope="col">Attendance</th>
-                            <th scope="col">Placement</th>
-                            <th scope="col">Starting Tag Bonus</th>
-                            <th scope="col">Tag 1 Bonus</th>
-                            <th scope="col">Beat Your Tag Bonus</th>
-                            <th scope="col">Total</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {% for event in row.eventBreakdown %}
-                            <tr>
-                              <td><a href="/events/{{ event.eventSlug }}/">{{ event.eventName }}</a></td>
-                              <td>{{ event.attendance }}</td>
-                              <td>{{ event.placement }}</td>
-                              <td>{{ event.startingTagBonusDisplay }}</td>
-                              <td>{{ event.tagOneBonusDisplay }}</td>
-                              <td>{{ event.beatYourTagBonusDisplay }}</td>
-                              <td>{{ event.eventTotal }}</td>
-                            </tr>
-                          {% endfor %}
-                          <tr>
-                            <th scope="row">Totals</th>
-                            <td>{{ row.totals.attendance }}</td>
-                            <td>{{ row.totals.placement }}</td>
-                            <td>{{ row.totals.startingTagBonus }}</td>
-                            <td>{{ row.totals.tagOneBonus }}</td>
-                            <td>{{ row.totals.beatYourTagBonus }}</td>
-                            <td>{{ row.totals.eventTotal }}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
                 </details>
               </th>
               {% for event in row.eventOverview %}
                 <td data-event-slug="{{ event.eventSlug }}">{% if event.played %}{{ event.points }}{% endif %}</td>
               {% endfor %}
+            </tr>
+            <tr class="leaderboard-breakdown-row">
+              <td colspan="{{ 2 + publicModel.homepage.leaderboardEvents.length }}">
+                <div class="leaderboard-breakdown">
+                  <div class="table-scroll">
+                    <table>
+                      <caption class="visually-hidden">{{ row.playerName }} scoring breakdown</caption>
+                      <thead>
+                        <tr>
+                          <th scope="col">Event</th>
+                          <th scope="col">Attendance</th>
+                          <th scope="col">Placement</th>
+                          <th scope="col">Starting Tag Bonus</th>
+                          <th scope="col">Tag 1 Bonus</th>
+                          <th scope="col">Beat Your Tag Bonus</th>
+                          <th scope="col">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for event in row.eventBreakdown %}
+                          <tr>
+                            <td><a href="/events/{{ event.eventSlug }}/">{{ event.eventName }}</a></td>
+                            <td>{{ event.attendance }}</td>
+                            <td>{{ event.placement }}</td>
+                            <td>{{ event.startingTagBonusDisplay }}</td>
+                            <td>{{ event.tagOneBonusDisplay }}</td>
+                            <td>{{ event.beatYourTagBonusDisplay }}</td>
+                            <td>{{ event.eventTotal }}</td>
+                          </tr>
+                        {% endfor %}
+                        <tr>
+                          <th scope="row">Totals</th>
+                          <td>{{ row.totals.attendance }}</td>
+                          <td>{{ row.totals.placement }}</td>
+                          <td>{{ row.totals.startingTagBonus }}</td>
+                          <td>{{ row.totals.tagOneBonus }}</td>
+                          <td>{{ row.totals.beatYourTagBonus }}</td>
+                          <td>{{ row.totals.eventTotal }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </td>
             </tr>
           {% endfor %}
         </tbody>

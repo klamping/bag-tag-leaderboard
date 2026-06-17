@@ -992,18 +992,20 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
   assert.match(homepage, />Hide breakdown</i);
   assert.match(homepage, /<td\b[^>]*class="[^"]*leaderboard-total-cell[^"]*"[\s\S]*?>[\s\S]*?>30<(?=[\s\S]*?>pts<)/i);
   assert.match(homepage, /<details\b[^>]*class="[^"]*leaderboard-breakdown-toggle[^"]*"[\s\S]*?<summary\b[^>]*class="[^"]*leaderboard-summary[^"]*"/i);
-  assert.match(homepage, /<details\b[^>]*class="[^"]*leaderboard-breakdown-toggle[^"]*"[\s\S]*?<div\b[^>]*class="[^"]*leaderboard-breakdown[^"]*"/i);
-  assert.match(
-    homepage,
-    /<details\b[^>]*class="[^"]*leaderboard-breakdown-toggle[^"]*"[\s\S]*?<caption\b[^>]*class="[^"]*visually-hidden[^"]*"[^>]*>Alice Smith scoring breakdown<\/caption>[\s\S]*?<\/details>/i
-  );
   assert.match(
     homepage,
     /<th scope="row"[^>]*class="[^"]*leaderboard-player-cell[^"]*"[\s\S]*?<details\b[^>]*class="[^"]*leaderboard-breakdown-toggle[^"]*"[\s\S]*?>Alice Smith<[\s\S]*?>Show breakdown<[\s\S]*?>Hide breakdown<[\s\S]*?<\/details>[\s\S]*?<\/th>/i
   );
+  assert.match(
+    homepage,
+    /<tr\b[^>]*>[\s\S]*?<th scope="row"[^>]*class="[^"]*leaderboard-player-cell[^"]*"[\s\S]*?Alice Smith[\s\S]*?<\/tr>\s*<tr\b[^>]*class="[^"]*leaderboard-breakdown-row[^"]*"/i
+  );
+  assert.match(
+    homepage,
+    /<tr\b[^>]*class="[^"]*leaderboard-breakdown-row[^"]*"[\s\S]*?<td\b[^>]*colspan="4"[^>]*>[\s\S]*?<div\b[^>]*class="[^"]*leaderboard-breakdown[^"]*"[\s\S]*?<caption\b[^>]*class="[^"]*visually-hidden[^"]*"[^>]*>Alice Smith scoring breakdown<\/caption>/i
+  );
   assert.match(homepage, /<td\b[^>]*data-event-slug="spring-showdown"[^>]*>20<\/td>/i);
   assert.match(homepage, /<td\b[^>]*data-event-slug="summer-sizzler"[^>]*>10<\/td>/i);
-  assert.doesNotMatch(homepage, /<tr\b[^>]*class="[^"]*leaderboard-breakdown-row[^"]*"/i);
   assert.match(homepage, /href="\/events\/spring-showdown\/"[^>]*>Spring Showdown</i);
   assert.match(homepage, /href="\/events\/summer-sizzler\/"[^>]*>Summer Sizzler</i);
   assert.match(homepage, />Totals</i);
@@ -1056,6 +1058,12 @@ test("siteBuildCommand builds a real Eleventy site into dist with homepage and e
   assert.match(stylesheet, /\.leaderboard-total-cell\s*\{/i);
   assert.match(stylesheet, /\.leaderboard-player-cell\s*\{/i);
   assert.match(stylesheet, /\.leaderboard-breakdown-toggle\s*\{/i);
+  assert.match(stylesheet, /\.leaderboard-breakdown-row\s*\{/i);
+  assert.match(stylesheet, /\.leaderboard-breakdown-row\s*>\s*td\s*\{/i);
+  assert.match(
+    stylesheet,
+    /tr:has\(\.leaderboard-breakdown-toggle:not\(\[open\]\)\)\s*\+\s*\.leaderboard-breakdown-row\s*\{[\s\S]*?display:\s*none;/i
+  );
   assert.match(
     stylesheet,
     /\.leaderboard-breakdown-toggle\s*:not\(\[open\]\)\s+\.leaderboard-summary-open\s*\{[\s\S]*?display:\s*none;/i
