@@ -106,6 +106,11 @@ test("runCli delegates site dev to the command module", async () => {
 
 test("siteDevCommand starts Eleventy watch and serve with the public model", async () => {
   const calls = [];
+  const fileSystem = {
+    async rm(targetPath, options) {
+      calls.push({ type: "rm", targetPath, options });
+    },
+  };
   const io = {
     stdout: "",
     stderr: "",
@@ -162,6 +167,7 @@ test("siteDevCommand starts Eleventy watch and serve with the public model", asy
       calls.push({ type: "buildPublicModel", value });
       return publicModel;
     },
+    fs: fileSystem,
     Eleventy: FakeEleventy,
     io,
   });
@@ -169,10 +175,17 @@ test("siteDevCommand starts Eleventy watch and serve with the public model", asy
   assert.deepEqual(result, { exitCode: 0 });
   assert.equal(io.stdout, "Started public site dev server.\n");
   assert.equal(io.stderr, "");
-  assert.deepEqual(calls, [
+  const constructorCall = calls.find((entry) => entry.type === "constructor");
+  assert.equal(typeof constructorCall.options.config, "function");
+  assert.deepEqual(calls.slice(0, 10), [
     { type: "loadCanonicalStore" },
     { type: "validateCanonicalStore", value: store },
     { type: "buildPublicModel", value: store },
+    {
+      type: "rm",
+      targetPath: "/tmp/base-dir/dist",
+      options: { recursive: true, force: true },
+    },
     {
       type: "constructor",
       inputDirectory: "/tmp/project-dir/site",
@@ -181,7 +194,7 @@ test("siteDevCommand starts Eleventy watch and serve with the public model", asy
         source: "cli",
         configPath: "/tmp/project-dir/.eleventy.js",
         runMode: "serve",
-        config: calls[3] && calls[3].options.config,
+        config: constructorCall.options.config,
       },
     },
     { type: "init" },
