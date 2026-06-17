@@ -4,6 +4,7 @@ const { spawnSync } = require("node:child_process");
 const fs = require("node:fs");
 const path = require("node:path");
 const { runCli: runCliCommand } = require("../lib/cli/runCli.js");
+const { siteDevCommand } = require("../lib/cli/siteDevCommand.js");
 
 const repoRoot = path.join(__dirname, "..");
 const cliPath = path.join(repoRoot, "bin", "bag-tag.js");
@@ -84,4 +85,133 @@ test("runCli delegates site build to the command module", async () => {
   assert.deepEqual(result, { exitCode: 0 });
   assert.equal(calls.length, 1);
   assert.equal(calls[0].sentinel, "build-ok");
+});
+
+test("runCli delegates site dev to the command module", async () => {
+  const calls = [];
+  const delegatedResult = { exitCode: 0, mode: "dev" };
+
+  const result = await runCliCommand(["site", "dev"], {
+    sentinel: "dev-ok",
+    siteDevCommand: async (options) => {
+      calls.push(options);
+      return delegatedResult;
+    },
+  });
+
+  assert.deepEqual(result, delegatedResult);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].sentinel, "dev-ok");
+});
+
+test("siteDevCommand starts Eleventy watch and serve with the public model", async () => {
+  const calls = [];
+  const io = {
+    stdout: "",
+    stderr: "",
+    writeStdout(value) {
+      this.stdout += value;
+    },
+    writeStderr(value) {
+      this.stderr += value;
+    },
+  };
+  const store = { players: [], events: [], results: [] };
+  const publicModel = { eventPages: [] };
+  class FakeEleventy {
+    constructor(inputDirectory, outputDirectory, options) {
+      calls.push({ type: "constructor", inputDirectory, outputDirectory, options });
+      this.options = options;
+    }
+
+    async init() {
+      calls.push({ type: "init" });
+      const fakeConfig = {
+        addGlobalData(name, value) {
+          calls.push({ type: "globalData", name, value });
+        },
+      };
+      this.options.config(fakeConfig);
+    }
+
+    setIgnoreInitial(value) {
+      calls.push({ type: "setIgnoreInitial", value });
+    }
+
+    async watch() {
+      calls.push({ type: "watch" });
+    }
+
+    async serve(port) {
+      calls.push({ type: "serve", port });
+    }
+  }
+
+  const result = await siteDevCommand({
+    baseDirectory: "/tmp/base-dir",
+    projectDirectory: "/tmp/project-dir",
+    port: 4173,
+    loadCanonicalStore: async () => {
+      calls.push({ type: "loadCanonicalStore" });
+      return store;
+    },
+    validateCanonicalStore: (value) => {
+      calls.push({ type: "validateCanonicalStore", value });
+    },
+    buildPublicModel: (value) => {
+      calls.push({ type: "buildPublicModel", value });
+      return publicModel;
+    },
+    Eleventy: FakeEleventy,
+    io,
+  });
+
+  assert.deepEqual(result, { exitCode: 0 });
+  assert.equal(io.stdout, "Started public site dev server.\n");
+  assert.equal(io.stderr, "");
+  assert.deepEqual(calls, [
+    { type: "loadCanonicalStore" },
+    { type: "validateCanonicalStore", value: store },
+    { type: "buildPublicModel", value: store },
+    {
+      type: "constructor",
+      inputDirectory: "/tmp/project-dir/site",
+      outputDirectory: "/tmp/base-dir/dist",
+      options: {
+        source: "cli",
+        configPath: "/tmp/project-dir/.eleventy.js",
+        runMode: "serve",
+        config: calls[3] && calls[3].options.config,
+      },
+    },
+    { type: "init" },
+    { type: "globalData", name: "publicModel", value: publicModel },
+    { type: "setIgnoreInitial", value: false },
+    { type: "watch" },
+    { type: "serve", port: 4173 },
+  ]);
+});
+
+test("siteDevCommand writes failures to stderr and exits non-zero", async () => {
+  const io = {
+    stdout: "",
+    stderr: "",
+    writeStdout(value) {
+      this.stdout += value;
+    },
+    writeStderr(value) {
+      this.stderr += value;
+    },
+  };
+
+  const result = await siteDevCommand({
+    loadCanonicalStore: async () => {
+      throw new Error("boom");
+    },
+    io,
+  });
+
+  assert.deepEqual(result, { exitCode: 1 });
+  assert.equal(io.stdout, "");
+  assert.equal(io.stderr, "boom\n");
 });
