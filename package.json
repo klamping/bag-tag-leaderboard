@@ -5,7 +5,7 @@
   "scripts": {
     "build": "npm run build:site",
     "build:site": "node ./bin/bag-tag.js site build",
-    "dev": "eleventy --serve",
+    "dev": "node ./bin/bag-tag.js site dev",
     "test": "node --test"
   },
   "bin": {
