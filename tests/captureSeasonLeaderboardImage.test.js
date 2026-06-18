@@ -105,6 +105,10 @@ test("captureSeasonLeaderboardImage rejects content that exceeds the supported e
       assert.equal(selector, "#season-leaderboard-image");
       return locator;
     },
+    async evaluate(callback, scale) {
+      assert.equal(typeof callback, "function");
+      assert.equal(scale, 0.99);
+    },
   };
   const browser = {
     async newPage(options) {
@@ -160,6 +164,10 @@ test("captureSeasonLeaderboardImage rejects internal overflow inside the export 
       assert.equal(selector, "#season-leaderboard-image");
       return locator;
     },
+    async evaluate(callback, scale) {
+      assert.equal(typeof callback, "function");
+      assert.equal(scale, 0.99);
+    },
   };
   const browser = {
     async newPage() {
@@ -183,4 +191,115 @@ test("captureSeasonLeaderboardImage rejects internal overflow inside the export 
 
   assert.equal(screenshotCalled, false);
   assert.equal(browserClosed, true);
+});
+
+test("captureSeasonLeaderboardImage compacts export content before failing on internal overflow", async () => {
+  const calls = [];
+  let evaluateCount = 0;
+  const locator = {
+    async boundingBox() {
+      calls.push({ type: "boundingBox" });
+
+      return { x: 0, y: 0, width: 960, height: 1350 };
+    },
+    async evaluate(callback) {
+      calls.push({ type: "locator.evaluate", callbackType: typeof callback });
+      evaluateCount += 1;
+
+      if (evaluateCount === 1) {
+        return {
+          scrollWidth: 960,
+          scrollHeight: 1670,
+          clientWidth: 952,
+          clientHeight: 1342,
+        };
+      }
+
+      return {
+        scrollWidth: 952,
+        scrollHeight: 1342,
+        clientWidth: 952,
+        clientHeight: 1342,
+      };
+    },
+    async screenshot(options) {
+      calls.push({ type: "screenshot", options });
+    },
+  };
+  const page = {
+    async goto(url) {
+      calls.push({ type: "goto", url });
+    },
+    locator(selector) {
+      calls.push({ type: "locator", selector });
+
+      return locator;
+    },
+    async evaluate(callback, scale) {
+      calls.push({ type: "page.evaluate", callbackType: typeof callback, scale });
+    },
+  };
+  const browser = {
+    async newPage(options) {
+      calls.push({ type: "newPage", options });
+
+      return page;
+    },
+    async close() {
+      calls.push({ type: "close" });
+    },
+  };
+
+  await captureSeasonLeaderboardImage({
+    exportPagePath: "/tmp/season-leaderboard-image/index.html",
+    outputPath: "/tmp/dist/season-leaderboard.png",
+    width: 960,
+    height: 1350,
+    launchBrowser: async () => browser,
+  });
+
+  assert.deepEqual(calls, [
+    {
+      type: "newPage",
+      options: {
+        viewport: { width: 960, height: 1350 },
+        deviceScaleFactor: 1,
+      },
+    },
+    {
+      type: "goto",
+      url: "file:///tmp/season-leaderboard-image/index.html",
+    },
+    {
+      type: "locator",
+      selector: "#season-leaderboard-image",
+    },
+    {
+      type: "boundingBox",
+    },
+    {
+      type: "locator.evaluate",
+      callbackType: "function",
+    },
+    {
+      type: "page.evaluate",
+      callbackType: "function",
+      scale: 0.8,
+    },
+    {
+      type: "locator.evaluate",
+      callbackType: "function",
+    },
+    {
+      type: "screenshot",
+      options: {
+        path: "/tmp/dist/season-leaderboard.png",
+        type: "png",
+        animations: "disabled",
+      },
+    },
+    {
+      type: "close",
+    },
+  ]);
 });
