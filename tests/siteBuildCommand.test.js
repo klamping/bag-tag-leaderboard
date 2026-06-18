@@ -1044,6 +1044,10 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
     path.join(tempDirectory, "dist", "events", "spring-showdown", "index.html"),
     "utf8"
   );
+  const seasonLeaderboardImagePage = await fs.readFile(
+    path.join(tempDirectory, "dist", "season-leaderboard-image", "index.html"),
+    "utf8"
+  );
   const pointsRulesPage = await fs.readFile(
     path.join(tempDirectory, "dist", "points-rules", "index.html"),
     "utf8"
@@ -1147,6 +1151,18 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
   // assert.match(eventPage, />Total</i);
   assert.match(eventPage, />DNF</i);
 
+  assert.match(
+    seasonLeaderboardImagePage,
+    /<title>Season Leaderboard Export \| Bag Tag Leaderboard<\/title>/i
+  );
+  assert.match(seasonLeaderboardImagePage, /id="season-leaderboard-image"/i);
+  assert.match(seasonLeaderboardImagePage, />Season Leaderboard</i);
+  assert.match(seasonLeaderboardImagePage, />2026 Season</i);
+  assert.match(seasonLeaderboardImagePage, />Alice Smith</i);
+  assert.match(seasonLeaderboardImagePage, />Bob Jones</i);
+  assert.match(seasonLeaderboardImagePage, />pts</i);
+  assert.match(seasonLeaderboardImagePage, />4\/12</i);
+
   assert.match(pointsRulesPage, /<title>Points Rules \| Bag Tag Leaderboard<\/title>/i);
   assert.match(pointsRulesPage, />Points Rules</i);
   assert.match(
@@ -1198,6 +1214,9 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
   assert.match(stylesheet, /\.points-rules-summary-link\s*\{/i);
   assert.match(stylesheet, /\.points-rules-page\s*\{/i);
   assert.match(stylesheet, /\.points-rules-section\s*\{/i);
+  assert.match(stylesheet, /#season-leaderboard-image\s*\{/i);
+  assert.match(stylesheet, /\.season-leaderboard-image-table\s*\{/i);
+  assert.match(stylesheet, /\.season-leaderboard-image-rank\s*\{/i);
 });
 
 test("siteBuildCommand leaves missed homepage event overview cells blank", async (t) => {
