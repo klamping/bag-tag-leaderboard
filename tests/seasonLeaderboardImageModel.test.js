@@ -115,3 +115,16 @@ test("buildSeasonLeaderboardImageModel returns null when the homepage leaderboar
 
   assert.equal(buildSeasonLeaderboardImageModel(publicModel), null);
 });
+
+test("buildSeasonLeaderboardImageModel assigns the same rank to tied season totals", () => {
+  const publicModel = buildPublicModel(createStore());
+
+  publicModel.homepage.leaderboardRows[1].seasonPoints = 10;
+
+  const imageModel = buildSeasonLeaderboardImageModel(publicModel);
+
+  assert.equal(imageModel.rows[0].seasonPoints, 10);
+  assert.equal(imageModel.rows[1].seasonPoints, 10);
+  assert.equal(imageModel.rows[0].rank, 1);
+  assert.equal(imageModel.rows[1].rank, 1);
+});
