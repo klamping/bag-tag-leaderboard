@@ -1541,7 +1541,32 @@ test("siteBuildCommand renders a single empty-state message when no events exist
   );
 });
 
-test("siteBuildCommand writes a season leaderboard PNG into dist", async (t) => {
+test("siteBuildCommand does not export the season leaderboard PNG by default", async (t) => {
+  const tempDirectory = await createTempBuildDirectory(t, "site-build-image-default-off-");
+  const store = createStore();
+  const captureCalls = [];
+
+  const result = await siteBuildCommand({
+    baseDirectory: tempDirectory,
+    projectDirectory: path.join(__dirname, ".."),
+    io: {
+      writeStdout: () => {},
+      writeStderr: () => {},
+    },
+    loadCanonicalStore: async () => store,
+    captureSeasonLeaderboardImage: async (options) => {
+      captureCalls.push(options);
+    },
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(captureCalls.length, 0);
+  await assert.rejects(fs.access(path.join(tempDirectory, "dist", "season-leaderboard.png")), {
+    code: "ENOENT",
+  });
+});
+
+test("siteBuildCommand writes a season leaderboard PNG into dist when export is requested", async (t) => {
   const tempDirectory = await createTempBuildDirectory(t, "site-build-image-export-");
   const store = createStore();
   const fakePngBytes = Buffer.from("fake png bytes");
@@ -1554,6 +1579,7 @@ test("siteBuildCommand writes a season leaderboard PNG into dist", async (t) => 
       writeStdout: () => {},
       writeStderr: () => {},
     },
+    shouldExportSeasonImage: true,
     loadCanonicalStore: async () => store,
     captureSeasonLeaderboardImage: async (options) => {
       captureCalls.push(options);
@@ -1579,7 +1605,7 @@ test("siteBuildCommand writes a season leaderboard PNG into dist", async (t) => 
   );
 });
 
-test("siteBuildCommand skips the season leaderboard PNG when no leaderboard rows exist", async (t) => {
+test("siteBuildCommand skips the season leaderboard PNG when export is requested and no leaderboard rows exist", async (t) => {
   const tempDirectory = await createTempBuildDirectory(t, "site-build-image-skip-");
   const store = createStore();
   const stdout = [];
@@ -1595,6 +1621,7 @@ test("siteBuildCommand skips the season leaderboard PNG when no leaderboard rows
       writeStdout: (value) => stdout.push(value),
       writeStderr: () => {},
     },
+    shouldExportSeasonImage: true,
     loadCanonicalStore: async () => store,
     captureSeasonLeaderboardImage: async () => {
       captureCalled = true;
@@ -1612,7 +1639,7 @@ test("siteBuildCommand skips the season leaderboard PNG when no leaderboard rows
   });
 });
 
-test("siteBuildCommand returns non-zero when leaderboard image capture fails", async (t) => {
+test("siteBuildCommand returns non-zero when requested leaderboard image capture fails", async (t) => {
   const tempDirectory = await createTempBuildDirectory(t, "site-build-image-fail-");
   const stderr = [];
 
@@ -1623,6 +1650,7 @@ test("siteBuildCommand returns non-zero when leaderboard image capture fails", a
       writeStdout: () => {},
       writeStderr: (value) => stderr.push(value),
     },
+    shouldExportSeasonImage: true,
     loadCanonicalStore: async () => createStore(),
     captureSeasonLeaderboardImage: async () => {
       throw new Error("capture exploded");
