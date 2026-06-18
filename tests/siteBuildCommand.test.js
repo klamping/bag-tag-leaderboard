@@ -1534,6 +1534,7 @@ test("siteBuildCommand does not export the season leaderboard PNG by default", a
   });
 
   assert.equal(result.exitCode, 0);
+  assert.equal(Object.hasOwn(result.publicModel, "seasonLeaderboardImage"), false);
   assert.equal(captureCalls.length, 0);
   await assert.rejects(fs.access(path.join(tempDirectory, "dist", "season-leaderboard.png")), {
     code: "ENOENT",
