@@ -85,7 +85,6 @@ test("buildSeasonLeaderboardImageModel maps the homepage leaderboard into the ex
 
   assert.deepEqual(buildSeasonLeaderboardImageModel(publicModel), {
     title: "Bag Tag Leaderboard",
-    subtitle: "Season Leaderboard",
     seasonLabel: "2026 Season",
     filename: "season-leaderboard.png",
     width: 960,
