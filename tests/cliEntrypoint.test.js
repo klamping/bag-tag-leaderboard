@@ -87,6 +87,21 @@ test("runCli delegates site build to the command module", async () => {
   assert.equal(calls[0].sentinel, "build-ok");
 });
 
+test("runCli passes --export-season-image to the site build command", async () => {
+  const calls = [];
+
+  const result = await runCliCommand(["site", "build", "--export-season-image"], {
+    siteBuildCommand: async (options) => {
+      calls.push(options);
+      return { exitCode: 0 };
+    },
+  });
+
+  assert.deepEqual(result, { exitCode: 0 });
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].shouldExportSeasonImage, true);
+});
+
 test("runCli delegates site dev to the command module", async () => {
   const calls = [];
   const delegatedResult = { exitCode: 0, mode: "dev" };
