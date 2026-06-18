@@ -12,6 +12,15 @@ test("captureSeasonLeaderboardImage opens the export page and writes a bounded p
       calls.push({ type: "boundingBox" });
       return { x: 0, y: 0, width: 1080, height: 1350 };
     },
+    async evaluate(callback) {
+      calls.push({ type: "evaluate", callbackType: typeof callback });
+      return {
+        scrollWidth: 1080,
+        scrollHeight: 1350,
+        clientWidth: 1080,
+        clientHeight: 1350,
+      };
+    },
     async screenshot(options) {
       calls.push({ type: "screenshot", options });
     },
@@ -61,6 +70,10 @@ test("captureSeasonLeaderboardImage opens the export page and writes a bounded p
     },
     {
       type: "boundingBox",
+    },
+    {
+      type: "evaluate",
+      callbackType: "function",
     },
     {
       type: "screenshot",
@@ -117,5 +130,57 @@ test("captureSeasonLeaderboardImage rejects content that exceeds the supported e
     /exceeds the supported 1080x1350 export bounds/i
   );
 
+  assert.equal(browserClosed, true);
+});
+
+test("captureSeasonLeaderboardImage rejects internal overflow inside the export bounds", async () => {
+  let screenshotCalled = false;
+  let browserClosed = false;
+  const locator = {
+    async boundingBox() {
+      return { x: 0, y: 0, width: 1080, height: 1350 };
+    },
+    async evaluate(callback) {
+      assert.equal(typeof callback, "function");
+
+      return {
+        scrollWidth: 1080,
+        scrollHeight: 1351,
+        clientWidth: 1080,
+        clientHeight: 1350,
+      };
+    },
+    async screenshot() {
+      screenshotCalled = true;
+    },
+  };
+  const page = {
+    async goto() {},
+    locator(selector) {
+      assert.equal(selector, "#season-leaderboard-image");
+      return locator;
+    },
+  };
+  const browser = {
+    async newPage() {
+      return page;
+    },
+    async close() {
+      browserClosed = true;
+    },
+  };
+
+  await assert.rejects(
+    captureSeasonLeaderboardImage({
+      exportPagePath: "/tmp/season-leaderboard-image/index.html",
+      outputPath: "/tmp/dist/season-leaderboard.png",
+      width: 1080,
+      height: 1350,
+      launchBrowser: async () => browser,
+    }),
+    /exceeds the supported 1080x1350 export bounds/i
+  );
+
+  assert.equal(screenshotCalled, false);
   assert.equal(browserClosed, true);
 });
