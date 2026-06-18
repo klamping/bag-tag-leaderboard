@@ -1163,12 +1163,23 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
     /<title>Season Leaderboard Export \| Bag Tag Leaderboard<\/title>/i
   );
   assert.match(seasonLeaderboardImagePage, /id="season-leaderboard-image"/i);
-  assert.match(seasonLeaderboardImagePage, />Season Leaderboard</i);
+  assert.doesNotMatch(
+    seasonLeaderboardImagePage,
+    /<p class="season-leaderboard-image-subtitle">Season Leaderboard<\/p>/i
+  );
   assert.match(seasonLeaderboardImagePage, />2026 Season</i);
   assert.match(seasonLeaderboardImagePage, />Alice Smith</i);
   assert.match(seasonLeaderboardImagePage, />Bob Jones</i);
   assert.match(seasonLeaderboardImagePage, />pts</i);
   assert.match(seasonLeaderboardImagePage, />4\/12</i);
+  assert.match(
+    seasonLeaderboardImagePage,
+    /<thead>[\s\S]*?<tr>[\s\S]*?<th scope="col">Rank<\/th>[\s\S]*?<th scope="col">Total<\/th>[\s\S]*?<th scope="col">Player<\/th>/i
+  );
+  assert.match(
+    seasonLeaderboardImagePage,
+    /<tbody>[\s\S]*?<tr>[\s\S]*?<th scope="row" class="season-leaderboard-image-rank">1<\/th>[\s\S]*?<td class="season-leaderboard-image-total">[\s\S]*?<span class="leaderboard-points-value">30<\/span>[\s\S]*?<span class="leaderboard-points-label">pts<\/span>[\s\S]*?<\/td>[\s\S]*?<td class="season-leaderboard-image-player">Alice Smith<\/td>/i
+  );
 
   assert.match(pointsRulesPage, /<title>Points Rules \| Bag Tag Leaderboard<\/title>/i);
   assert.match(pointsRulesPage, />Points Rules</i);
@@ -1223,7 +1234,7 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
   assert.match(stylesheet, /\.points-rules-section\s*\{/i);
   assert.match(
     stylesheet,
-    /#season-leaderboard-image\s*\{[\s\S]*?width:\s*1080px;[\s\S]*?height:\s*1350px;/i
+    /#season-leaderboard-image\s*\{[\s\S]*?width:\s*960px;[\s\S]*?height:\s*1350px;/i
   );
   assert.doesNotMatch(stylesheet, /#season-leaderboard-image\s*\{[\s\S]*?min-height:\s*1350px;/i);
   assert.match(stylesheet, /\.season-leaderboard-image-table\s*\{/i);
@@ -1560,7 +1571,7 @@ test("siteBuildCommand writes a season leaderboard PNG into dist", async (t) => 
     captureCalls[0].outputPath,
     new RegExp(`${escapeRegexLiteral(path.join("dist", "season-leaderboard.png"))}$`)
   );
-  assert.equal(captureCalls[0].width, 1080);
+  assert.equal(captureCalls[0].width, 960);
   assert.equal(captureCalls[0].height, 1350);
   assert.deepEqual(
     await fs.readFile(path.join(tempDirectory, "dist", "season-leaderboard.png")),

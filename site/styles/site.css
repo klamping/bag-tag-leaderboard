@@ -480,10 +480,10 @@ th .th-label {
 }
 
 #season-leaderboard-image {
-  width: 1080px;
+  width: 960px;
   height: 1350px;
   margin: 0 auto;
-  padding: 3.25rem 3rem 2.75rem;
+  padding: 2.75rem 2.5rem 2.5rem;
   border-width: 4px;
   border-radius: 2rem;
   box-shadow: var(--shadow-poster);
@@ -504,43 +504,34 @@ th .th-label {
   text-transform: uppercase;
 }
 
-.season-leaderboard-image-subtitle {
-  margin: 0;
-  color: var(--color-orange);
-  font-family: "Arial Black", Impact, Haettenschweiler, "Arial Narrow Bold", Arial, sans-serif;
-  font-size: 1.5rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .season-leaderboard-image-table {
   min-width: 0;
-  font-size: 1.2rem;
+  font-size: 1.05rem;
 }
 
 .season-leaderboard-image-table th,
 .season-leaderboard-image-table td {
-  padding: 1rem 0.85rem;
+  padding: 0.8rem 0.55rem;
   text-align: center;
 }
 
-.season-leaderboard-image-table th:nth-child(2),
-.season-leaderboard-image-table td:nth-child(2) {
+.season-leaderboard-image-table th:nth-child(3),
+.season-leaderboard-image-table td:nth-child(3) {
   text-align: left;
 }
 
 .season-leaderboard-image-rank {
-  width: 5rem;
-  font-size: 1.5rem;
+  width: 4.25rem;
+  font-size: 1.35rem;
 }
 
 .season-leaderboard-image-player {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 700;
 }
 
 .season-leaderboard-image-total {
-  min-width: 7rem;
+  min-width: 6rem;
 }
 
 .season-leaderboard-image-footer {
