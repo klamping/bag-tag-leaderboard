@@ -16,7 +16,6 @@ function permalink({ publicModel }) {
   <section id="season-leaderboard-image" class="season-leaderboard-image panel stack">
     <header class="season-leaderboard-image-header stack-tight">
       <p class="eyebrow">{{ exportModel.seasonLabel }}</p>
-      <p class="season-leaderboard-image-subtitle">{{ exportModel.subtitle }}</p>
       <h1>{{ exportModel.title }}</h1>
     </header>
 
@@ -24,8 +23,8 @@ function permalink({ publicModel }) {
       <thead>
         <tr>
           <th scope="col">Rank</th>
-          <th scope="col">Player</th>
           <th scope="col">Total</th>
+          <th scope="col">Player</th>
           {% for eventHeader in exportModel.eventHeaders %}
             <th scope="col">{{ eventHeader.shortDate }}</th>
           {% endfor %}
@@ -35,11 +34,11 @@ function permalink({ publicModel }) {
         {% for row in exportModel.rows %}
           <tr>
             <th scope="row" class="season-leaderboard-image-rank">{{ row.rank }}</th>
-            <td class="season-leaderboard-image-player">{{ row.playerName }}</td>
             <td class="season-leaderboard-image-total">
               <span class="leaderboard-points-value">{{ row.seasonPoints }}</span>
               <span class="leaderboard-points-label">pts</span>
             </td>
+            <td class="season-leaderboard-image-player">{{ row.playerName }}</td>
             {% for event in row.eventOverview %}
               <td>{% if event.played %}{{ event.points }}{% endif %}</td>
             {% endfor %}
