@@ -1059,6 +1059,7 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
   // assert.match(homepage, />Leaderboard</i);
   // assert.match(homepage, />Events</i);
   assert.match(homepage, elementWithClassPattern("div", "leaderboard-table-scroll"));
+  assert.match(homepage, /<link rel="stylesheet" href="\/styles\/site\.css">/i);
   assert.match(homepage, elementWithClassPattern("table", "leaderboard-table"));
   assert.match(homepage, /<th scope="col">Season<br\s*\/?>Total<\/th>/i);
   assert.match(homepage, /<th scope="col">Player<\/th>/i);
@@ -1097,6 +1098,10 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
   assert.match(homepage, /href="\/events\/summer-sizzler\/"[^>]*>Summer Sizzler</i);
   assert.match(homepage, />Totals</i);
   assert.match(homepage, /20<\/td>/i);
+  assert.match(
+    seasonLeaderboardImagePage,
+    /<link rel="stylesheet" href="\.\.\/styles\/site\.css">/i
+  );
   assert.match(homepage, />Beat Your Tag Bonus</i);
   assert.match(homepage, />Tag 1 Bonus</i);
   assert.match(homepage, elementWithClassPattern("section", "points-rules-summary"));
