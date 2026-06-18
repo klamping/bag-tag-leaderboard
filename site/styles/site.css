@@ -479,6 +479,79 @@ th .th-label {
   font-weight: bold;
 }
 
+#season-leaderboard-image {
+  width: 1080px;
+  height: 1350px;
+  margin: 0 auto;
+  padding: 3.25rem 3rem 2.75rem;
+  border-width: 4px;
+  border-radius: 2rem;
+  box-shadow: var(--shadow-poster);
+}
+
+.season-leaderboard-image {
+  justify-content: space-between;
+}
+
+.season-leaderboard-image-header {
+  text-align: center;
+}
+
+.season-leaderboard-image-header h1 {
+  margin: 0;
+  font-size: 3.75rem;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.season-leaderboard-image-subtitle {
+  margin: 0;
+  color: var(--color-orange);
+  font-family: "Arial Black", Impact, Haettenschweiler, "Arial Narrow Bold", Arial, sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.season-leaderboard-image-table {
+  min-width: 0;
+  font-size: 1.2rem;
+}
+
+.season-leaderboard-image-table th,
+.season-leaderboard-image-table td {
+  padding: 1rem 0.85rem;
+  text-align: center;
+}
+
+.season-leaderboard-image-table th:nth-child(2),
+.season-leaderboard-image-table td:nth-child(2) {
+  text-align: left;
+}
+
+.season-leaderboard-image-rank {
+  width: 5rem;
+  font-size: 1.5rem;
+}
+
+.season-leaderboard-image-player {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.season-leaderboard-image-total {
+  min-width: 7rem;
+}
+
+.season-leaderboard-image-footer {
+  color: var(--color-ink-soft);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 @media (min-width: 48rem) {
   .page-shell {
     padding: 2rem 1.5rem 3rem;
