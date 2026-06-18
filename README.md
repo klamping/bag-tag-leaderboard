@@ -28,7 +28,7 @@ Primary commands:
 
 - `bag-tag events import`
 - `bag-tag events delete`
-- `bag-tag site build`
+- `bag-tag site build [--export-season-image]`
 
 Examples:
 
@@ -36,11 +36,14 @@ Examples:
 node ./bin/bag-tag.js events import
 node ./bin/bag-tag.js events delete
 node ./bin/bag-tag.js site build
+node ./bin/bag-tag.js site build --export-season-image
 ```
 
 `bag-tag events delete` is interactive and prompts for the event slug before confirmation.
 
 `bag-tag site build` reads the canonical store and writes the Eleventy output to `dist/`.
+
+`--export-season-image` is optional. By default, `site build` does not emit the season leaderboard export page or capture `dist/season-leaderboard.png`.
 
 ## Package Scripts
 

@@ -26,7 +26,7 @@ test("bag-tag prints command help to stderr with no args", () => {
   assert.equal(result.stdout, "");
   assert.match(result.stderr, /bag-tag events import/i);
   assert.match(result.stderr, /bag-tag events delete/i);
-  assert.match(result.stderr, /bag-tag site build/i);
+  assert.match(result.stderr, /bag-tag site build \[--export-season-image\]/i);
 });
 
 test("bag-tag prints command help to stderr for invalid usage", () => {
@@ -36,7 +36,7 @@ test("bag-tag prints command help to stderr for invalid usage", () => {
   assert.equal(result.stdout, "");
   assert.match(result.stderr, /bag-tag events import/i);
   assert.match(result.stderr, /bag-tag events delete/i);
-  assert.match(result.stderr, /bag-tag site build/i);
+  assert.match(result.stderr, /bag-tag site build \[--export-season-image\]/i);
 });
 
 test("runCli delegates events import to the command module", async () => {
