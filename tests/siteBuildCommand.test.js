@@ -1214,7 +1214,11 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
   assert.match(stylesheet, /\.points-rules-summary-link\s*\{/i);
   assert.match(stylesheet, /\.points-rules-page\s*\{/i);
   assert.match(stylesheet, /\.points-rules-section\s*\{/i);
-  assert.match(stylesheet, /#season-leaderboard-image\s*\{/i);
+  assert.match(
+    stylesheet,
+    /#season-leaderboard-image\s*\{[\s\S]*?width:\s*1080px;[\s\S]*?height:\s*1350px;/i
+  );
+  assert.doesNotMatch(stylesheet, /#season-leaderboard-image\s*\{[\s\S]*?min-height:\s*1350px;/i);
   assert.match(stylesheet, /\.season-leaderboard-image-table\s*\{/i);
   assert.match(stylesheet, /\.season-leaderboard-image-rank\s*\{/i);
 });
@@ -1507,6 +1511,10 @@ test("siteBuildCommand renders a single empty-state message when no events exist
   assert.equal(emptyMatches.length, 1);
   assert.doesNotMatch(homepage, />Leaderboard</i);
   assert.doesNotMatch(homepage, />Events</i);
+  await assert.rejects(
+    fs.readFile(path.join(tempDirectory, "dist", "season-leaderboard-image", "index.html"), "utf8"),
+    { code: "ENOENT" }
+  );
 });
 
 test("siteBuildCommand returns non-zero when canonical validation fails", async () => {

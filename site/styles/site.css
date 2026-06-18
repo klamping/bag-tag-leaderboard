@@ -481,7 +481,7 @@ th .th-label {
 
 #season-leaderboard-image {
   width: 1080px;
-  min-height: 1350px;
+  height: 1350px;
   margin: 0 auto;
   padding: 3.25rem 3rem 2.75rem;
   border-width: 4px;
