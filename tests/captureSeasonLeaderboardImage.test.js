@@ -10,14 +10,14 @@ test("captureSeasonLeaderboardImage opens the export page and writes a bounded p
   const locator = {
     async boundingBox() {
       calls.push({ type: "boundingBox" });
-      return { x: 0, y: 0, width: 1080, height: 1350 };
+      return { x: 0, y: 0, width: 960, height: 1350 };
     },
     async evaluate(callback) {
       calls.push({ type: "evaluate", callbackType: typeof callback });
       return {
-        scrollWidth: 1080,
+        scrollWidth: 960,
         scrollHeight: 1350,
-        clientWidth: 1080,
+        clientWidth: 960,
         clientHeight: 1350,
       };
     },
@@ -47,7 +47,7 @@ test("captureSeasonLeaderboardImage opens the export page and writes a bounded p
   await captureSeasonLeaderboardImage({
     exportPagePath: "/tmp/season-leaderboard-image/index.html",
     outputPath: "/tmp/dist/season-leaderboard.png",
-    width: 1080,
+    width: 960,
     height: 1350,
     launchBrowser: async () => browser,
   });
@@ -56,7 +56,7 @@ test("captureSeasonLeaderboardImage opens the export page and writes a bounded p
     {
       type: "newPage",
       options: {
-        viewport: { width: 1080, height: 1350 },
+        viewport: { width: 960, height: 1350 },
         deviceScaleFactor: 1,
       },
     },
@@ -93,7 +93,7 @@ test("captureSeasonLeaderboardImage rejects content that exceeds the supported e
   let browserClosed = false;
   const locator = {
     async boundingBox() {
-      return { x: 0, y: 0, width: 1081, height: 1350 };
+      return { x: 0, y: 0, width: 961, height: 1350 };
     },
     async screenshot() {
       throw new Error("screenshot should not run for overflowing content");
@@ -109,7 +109,7 @@ test("captureSeasonLeaderboardImage rejects content that exceeds the supported e
   const browser = {
     async newPage(options) {
       assert.deepEqual(options, {
-        viewport: { width: 1080, height: 1350 },
+        viewport: { width: 960, height: 1350 },
         deviceScaleFactor: 1,
       });
       return page;
@@ -123,11 +123,11 @@ test("captureSeasonLeaderboardImage rejects content that exceeds the supported e
     captureSeasonLeaderboardImage({
       exportPagePath: "/tmp/season-leaderboard-image/index.html",
       outputPath: "/tmp/dist/season-leaderboard.png",
-      width: 1080,
+      width: 960,
       height: 1350,
       launchBrowser: async () => browser,
     }),
-    /exceeds the supported 1080x1350 export bounds/i
+    /exceeds the supported 960x1350 export bounds/i
   );
 
   assert.equal(browserClosed, true);
@@ -138,15 +138,15 @@ test("captureSeasonLeaderboardImage rejects internal overflow inside the export 
   let browserClosed = false;
   const locator = {
     async boundingBox() {
-      return { x: 0, y: 0, width: 1080, height: 1350 };
+      return { x: 0, y: 0, width: 960, height: 1350 };
     },
     async evaluate(callback) {
       assert.equal(typeof callback, "function");
 
       return {
-        scrollWidth: 1080,
+        scrollWidth: 960,
         scrollHeight: 1351,
-        clientWidth: 1080,
+        clientWidth: 960,
         clientHeight: 1350,
       };
     },
@@ -174,11 +174,11 @@ test("captureSeasonLeaderboardImage rejects internal overflow inside the export 
     captureSeasonLeaderboardImage({
       exportPagePath: "/tmp/season-leaderboard-image/index.html",
       outputPath: "/tmp/dist/season-leaderboard.png",
-      width: 1080,
+      width: 960,
       height: 1350,
       launchBrowser: async () => browser,
     }),
-    /exceeds the supported 1080x1350 export bounds/i
+    /exceeds the supported 960x1350 export bounds/i
   );
 
   assert.equal(screenshotCalled, false);
