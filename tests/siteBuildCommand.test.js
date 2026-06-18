@@ -1571,6 +1571,7 @@ test("siteBuildCommand writes a season leaderboard PNG into dist", async (t) => 
 test("siteBuildCommand skips the season leaderboard PNG when no leaderboard rows exist", async (t) => {
   const tempDirectory = await createTempBuildDirectory(t, "site-build-image-skip-");
   const store = createStore();
+  const stdout = [];
   let captureCalled = false;
 
   store.events.items = [];
@@ -1580,7 +1581,7 @@ test("siteBuildCommand skips the season leaderboard PNG when no leaderboard rows
     baseDirectory: tempDirectory,
     projectDirectory: path.join(__dirname, ".."),
     io: {
-      writeStdout: () => {},
+      writeStdout: (value) => stdout.push(value),
       writeStderr: () => {},
     },
     loadCanonicalStore: async () => store,
@@ -1591,6 +1592,10 @@ test("siteBuildCommand skips the season leaderboard PNG when no leaderboard rows
 
   assert.equal(result.exitCode, 0);
   assert.equal(captureCalled, false);
+  assert.equal(
+    stdout.join(""),
+    "Skipped season leaderboard image export because no leaderboard rows were available.\nBuilt public site for 0 event page(s).\n"
+  );
   await assert.rejects(fs.access(path.join(tempDirectory, "dist", "season-leaderboard.png")), {
     code: "ENOENT",
   });
