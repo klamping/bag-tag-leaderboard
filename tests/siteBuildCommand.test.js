@@ -973,6 +973,7 @@ test("siteBuildCommand validates the canonical store and returns the public mode
       writeStderr: () => {},
     },
     loadCanonicalStore: async () => createStore(),
+    captureSeasonLeaderboardImage: async () => {},
   });
 
   assert.equal(result.exitCode, 0);
@@ -1033,6 +1034,7 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
       writeStderr: () => {},
     },
     loadCanonicalStore: async () => store,
+    captureSeasonLeaderboardImage: async () => {},
   });
 
   assert.equal(result.exitCode, 0);
@@ -1269,6 +1271,7 @@ test("siteBuildCommand leaves missed homepage event overview cells blank", async
       writeStderr: () => {},
     },
     loadCanonicalStore: async () => store,
+    captureSeasonLeaderboardImage: async () => {},
   });
 
   assert.equal(result.exitCode, 0);
@@ -1337,6 +1340,7 @@ test("siteBuildCommand renders kickoff tag bonus zeros as dashes", async (t) => 
       writeStderr: () => {},
     },
     loadCanonicalStore: async () => store,
+    captureSeasonLeaderboardImage: async () => {},
   });
 
   assert.equal(result.exitCode, 0);
@@ -1380,6 +1384,7 @@ test("siteBuildCommand renders decoded event-page player names in displayed orde
       writeStderr: () => {},
     },
     loadCanonicalStore: async () => store,
+    captureSeasonLeaderboardImage: async () => {},
   });
 
   assert.equal(result.exitCode, 0);
@@ -1412,6 +1417,7 @@ test("siteBuildCommand renders named HTML entities in event-page player names", 
       writeStderr: () => {},
     },
     loadCanonicalStore: async () => store,
+    captureSeasonLeaderboardImage: async () => {},
   });
 
   assert.equal(result.exitCode, 0);
@@ -1442,6 +1448,7 @@ test("siteBuildCommand renders decoded homepage leaderboard player names without
       writeStderr: () => {},
     },
     loadCanonicalStore: async () => store,
+    captureSeasonLeaderboardImage: async () => {},
   });
 
   assert.equal(result.exitCode, 0);
@@ -1472,6 +1479,7 @@ test("siteBuildCommand renders tied homepage leaderboard rows in decoded visible
       writeStderr: () => {},
     },
     loadCanonicalStore: async () => store,
+    captureSeasonLeaderboardImage: async () => {},
   });
 
   assert.equal(result.exitCode, 0);
@@ -1520,6 +1528,93 @@ test("siteBuildCommand renders a single empty-state message when no events exist
     fs.readFile(path.join(tempDirectory, "dist", "season-leaderboard-image", "index.html"), "utf8"),
     { code: "ENOENT" }
   );
+});
+
+test("siteBuildCommand writes a season leaderboard PNG into dist", async (t) => {
+  const tempDirectory = await createTempBuildDirectory(t, "site-build-image-export-");
+  const store = createStore();
+  const fakePngBytes = Buffer.from("fake png bytes");
+  const captureCalls = [];
+
+  const result = await siteBuildCommand({
+    baseDirectory: tempDirectory,
+    projectDirectory: path.join(__dirname, ".."),
+    io: {
+      writeStdout: () => {},
+      writeStderr: () => {},
+    },
+    loadCanonicalStore: async () => store,
+    captureSeasonLeaderboardImage: async (options) => {
+      captureCalls.push(options);
+      await fs.writeFile(options.outputPath, fakePngBytes);
+    },
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(captureCalls.length, 1);
+  assert.match(
+    captureCalls[0].exportPagePath,
+    new RegExp(`${escapeRegexLiteral(path.join("dist", "season-leaderboard-image", "index.html"))}$`)
+  );
+  assert.match(
+    captureCalls[0].outputPath,
+    new RegExp(`${escapeRegexLiteral(path.join("dist", "season-leaderboard.png"))}$`)
+  );
+  assert.equal(captureCalls[0].width, 1080);
+  assert.equal(captureCalls[0].height, 1350);
+  assert.deepEqual(
+    await fs.readFile(path.join(tempDirectory, "dist", "season-leaderboard.png")),
+    fakePngBytes
+  );
+});
+
+test("siteBuildCommand skips the season leaderboard PNG when no leaderboard rows exist", async (t) => {
+  const tempDirectory = await createTempBuildDirectory(t, "site-build-image-skip-");
+  const store = createStore();
+  let captureCalled = false;
+
+  store.events.items = [];
+  store.results.items = [];
+
+  const result = await siteBuildCommand({
+    baseDirectory: tempDirectory,
+    projectDirectory: path.join(__dirname, ".."),
+    io: {
+      writeStdout: () => {},
+      writeStderr: () => {},
+    },
+    loadCanonicalStore: async () => store,
+    captureSeasonLeaderboardImage: async () => {
+      captureCalled = true;
+    },
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(captureCalled, false);
+  await assert.rejects(fs.access(path.join(tempDirectory, "dist", "season-leaderboard.png")), {
+    code: "ENOENT",
+  });
+});
+
+test("siteBuildCommand returns non-zero when leaderboard image capture fails", async (t) => {
+  const tempDirectory = await createTempBuildDirectory(t, "site-build-image-fail-");
+  const stderr = [];
+
+  const result = await siteBuildCommand({
+    baseDirectory: tempDirectory,
+    projectDirectory: path.join(__dirname, ".."),
+    io: {
+      writeStdout: () => {},
+      writeStderr: (value) => stderr.push(value),
+    },
+    loadCanonicalStore: async () => createStore(),
+    captureSeasonLeaderboardImage: async () => {
+      throw new Error("capture exploded");
+    },
+  });
+
+  assert.deepEqual(result, { exitCode: 1 });
+  assert.match(stderr.join(""), /capture exploded/i);
 });
 
 test("season leaderboard image template keeps permalink logic in the template file", async () => {
