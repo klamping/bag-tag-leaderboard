@@ -1571,7 +1571,7 @@ test("siteBuildCommand writes a season leaderboard PNG into dist", async (t) => 
     captureCalls[0].outputPath,
     new RegExp(`${escapeRegexLiteral(path.join("dist", "season-leaderboard.png"))}$`)
   );
-  assert.equal(captureCalls[0].width, 960);
+  assert.equal(captureCalls[0].width, 1080);
   assert.equal(captureCalls[0].height, 1350);
   assert.deepEqual(
     await fs.readFile(path.join(tempDirectory, "dist", "season-leaderboard.png")),
