@@ -1046,10 +1046,6 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
     path.join(tempDirectory, "dist", "events", "spring-showdown", "index.html"),
     "utf8"
   );
-  const seasonLeaderboardImagePage = await fs.readFile(
-    path.join(tempDirectory, "dist", "season-leaderboard-image", "index.html"),
-    "utf8"
-  );
   const pointsRulesPage = await fs.readFile(
     path.join(tempDirectory, "dist", "points-rules", "index.html"),
     "utf8"
@@ -1100,10 +1096,6 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
   assert.match(homepage, /href="\/events\/summer-sizzler\/"[^>]*>Summer Sizzler</i);
   assert.match(homepage, />Totals</i);
   assert.match(homepage, /20<\/td>/i);
-  assert.match(
-    seasonLeaderboardImagePage,
-    /<link rel="stylesheet" href="\.\.\/styles\/site\.css">/i
-  );
   assert.match(homepage, />Beat Your Tag Bonus</i);
   assert.match(homepage, />Tag 1 Bonus</i);
   assert.match(homepage, elementWithClassPattern("section", "points-rules-summary"));
@@ -1158,27 +1150,9 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
   // assert.match(eventPage, />Total</i);
   assert.match(eventPage, />DNF</i);
 
-  assert.match(
-    seasonLeaderboardImagePage,
-    /<title>Season Leaderboard Export \| Bag Tag Leaderboard<\/title>/i
-  );
-  assert.match(seasonLeaderboardImagePage, /id="season-leaderboard-image"/i);
-  assert.doesNotMatch(
-    seasonLeaderboardImagePage,
-    /<p class="season-leaderboard-image-subtitle">Season Leaderboard<\/p>/i
-  );
-  assert.match(seasonLeaderboardImagePage, />2026 Season</i);
-  assert.match(seasonLeaderboardImagePage, />Alice Smith</i);
-  assert.match(seasonLeaderboardImagePage, />Bob Jones</i);
-  assert.match(seasonLeaderboardImagePage, />pts</i);
-  assert.match(seasonLeaderboardImagePage, />4\/12</i);
-  assert.match(
-    seasonLeaderboardImagePage,
-    /<thead>[\s\S]*?<tr>[\s\S]*?<th scope="col">Rank<\/th>[\s\S]*?<th scope="col">Total<\/th>[\s\S]*?<th scope="col">Player<\/th>/i
-  );
-  assert.match(
-    seasonLeaderboardImagePage,
-    /<tbody>[\s\S]*?<tr>[\s\S]*?<th scope="row" class="season-leaderboard-image-rank">1<\/th>[\s\S]*?<td class="season-leaderboard-image-total">[\s\S]*?<span class="leaderboard-points-value">30<\/span>[\s\S]*?<span class="leaderboard-points-label">pts<\/span>[\s\S]*?<\/td>[\s\S]*?<td class="season-leaderboard-image-player">Alice Smith<\/td>/i
+  await assert.rejects(
+    fs.readFile(path.join(tempDirectory, "dist", "season-leaderboard-image", "index.html"), "utf8"),
+    { code: "ENOENT" }
   );
 
   assert.match(pointsRulesPage, /<title>Points Rules \| Bag Tag Leaderboard<\/title>/i);
@@ -1541,7 +1515,33 @@ test("siteBuildCommand renders a single empty-state message when no events exist
   );
 });
 
-test("siteBuildCommand writes a season leaderboard PNG into dist", async (t) => {
+test("siteBuildCommand does not export the season leaderboard PNG by default", async (t) => {
+  const tempDirectory = await createTempBuildDirectory(t, "site-build-image-default-off-");
+  const store = createStore();
+  const captureCalls = [];
+
+  const result = await siteBuildCommand({
+    baseDirectory: tempDirectory,
+    projectDirectory: path.join(__dirname, ".."),
+    io: {
+      writeStdout: () => {},
+      writeStderr: () => {},
+    },
+    loadCanonicalStore: async () => store,
+    captureSeasonLeaderboardImage: async (options) => {
+      captureCalls.push(options);
+    },
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(Object.hasOwn(result.publicModel, "seasonLeaderboardImage"), false);
+  assert.equal(captureCalls.length, 0);
+  await assert.rejects(fs.access(path.join(tempDirectory, "dist", "season-leaderboard.png")), {
+    code: "ENOENT",
+  });
+});
+
+test("siteBuildCommand writes a season leaderboard PNG into dist when export is requested", async (t) => {
   const tempDirectory = await createTempBuildDirectory(t, "site-build-image-export-");
   const store = createStore();
   const fakePngBytes = Buffer.from("fake png bytes");
@@ -1554,6 +1554,7 @@ test("siteBuildCommand writes a season leaderboard PNG into dist", async (t) => 
       writeStdout: () => {},
       writeStderr: () => {},
     },
+    shouldExportSeasonImage: true,
     loadCanonicalStore: async () => store,
     captureSeasonLeaderboardImage: async (options) => {
       captureCalls.push(options);
@@ -1577,9 +1578,41 @@ test("siteBuildCommand writes a season leaderboard PNG into dist", async (t) => 
     await fs.readFile(path.join(tempDirectory, "dist", "season-leaderboard.png")),
     fakePngBytes
   );
+
+  const seasonLeaderboardImagePage = await fs.readFile(
+    path.join(tempDirectory, "dist", "season-leaderboard-image", "index.html"),
+    "utf8"
+  );
+
+  assert.match(
+    seasonLeaderboardImagePage,
+    /<link rel="stylesheet" href="\.\.\/styles\/site\.css">/i
+  );
+  assert.match(
+    seasonLeaderboardImagePage,
+    /<title>Season Leaderboard Export \| Bag Tag Leaderboard<\/title>/i
+  );
+  assert.match(seasonLeaderboardImagePage, /id="season-leaderboard-image"/i);
+  assert.doesNotMatch(
+    seasonLeaderboardImagePage,
+    /<p class="season-leaderboard-image-subtitle">Season Leaderboard<\/p>/i
+  );
+  assert.match(seasonLeaderboardImagePage, />2026 Season</i);
+  assert.match(seasonLeaderboardImagePage, />Alice Smith</i);
+  assert.match(seasonLeaderboardImagePage, />Bob Jones</i);
+  assert.match(seasonLeaderboardImagePage, />pts</i);
+  assert.match(seasonLeaderboardImagePage, />4\/12</i);
+  assert.match(
+    seasonLeaderboardImagePage,
+    /<thead>[\s\S]*?<tr>[\s\S]*?<th scope="col">Rank<\/th>[\s\S]*?<th scope="col">Total<\/th>[\s\S]*?<th scope="col">Player<\/th>/i
+  );
+  assert.match(
+    seasonLeaderboardImagePage,
+    /<tbody>[\s\S]*?<tr>[\s\S]*?<th scope="row" class="season-leaderboard-image-rank">1<\/th>[\s\S]*?<td class="season-leaderboard-image-total">[\s\S]*?<span class="leaderboard-points-value">10<\/span>[\s\S]*?<span class="leaderboard-points-label">pts<\/span>[\s\S]*?<\/td>[\s\S]*?<td class="season-leaderboard-image-player">Alice Smith<\/td>/i
+  );
 });
 
-test("siteBuildCommand skips the season leaderboard PNG when no leaderboard rows exist", async (t) => {
+test("siteBuildCommand skips the season leaderboard PNG when export is requested and no leaderboard rows exist", async (t) => {
   const tempDirectory = await createTempBuildDirectory(t, "site-build-image-skip-");
   const store = createStore();
   const stdout = [];
@@ -1595,6 +1628,7 @@ test("siteBuildCommand skips the season leaderboard PNG when no leaderboard rows
       writeStdout: (value) => stdout.push(value),
       writeStderr: () => {},
     },
+    shouldExportSeasonImage: true,
     loadCanonicalStore: async () => store,
     captureSeasonLeaderboardImage: async () => {
       captureCalled = true;
@@ -1612,7 +1646,7 @@ test("siteBuildCommand skips the season leaderboard PNG when no leaderboard rows
   });
 });
 
-test("siteBuildCommand returns non-zero when leaderboard image capture fails", async (t) => {
+test("siteBuildCommand returns non-zero when requested leaderboard image capture fails", async (t) => {
   const tempDirectory = await createTempBuildDirectory(t, "site-build-image-fail-");
   const stderr = [];
 
@@ -1623,6 +1657,7 @@ test("siteBuildCommand returns non-zero when leaderboard image capture fails", a
       writeStdout: () => {},
       writeStderr: (value) => stderr.push(value),
     },
+    shouldExportSeasonImage: true,
     loadCanonicalStore: async () => createStore(),
     captureSeasonLeaderboardImage: async () => {
       throw new Error("capture exploded");
