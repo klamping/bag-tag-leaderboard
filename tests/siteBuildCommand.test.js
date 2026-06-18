@@ -1517,6 +1517,17 @@ test("siteBuildCommand renders a single empty-state message when no events exist
   );
 });
 
+test("season leaderboard image template keeps permalink logic in the template file", async () => {
+  const templatePath = path.join(__dirname, "..", "site", "season-leaderboard-image.njk");
+  const templateSource = await fs.readFile(templatePath, "utf8");
+
+  assert.match(templateSource, /^---js\n/);
+  await assert.rejects(
+    fs.access(path.join(__dirname, "..", "site", "season-leaderboard-image.11tydata.js")),
+    { code: "ENOENT" }
+  );
+});
+
 test("siteBuildCommand returns non-zero when canonical validation fails", async () => {
   const stderr = [];
   const result = await siteBuildCommand({

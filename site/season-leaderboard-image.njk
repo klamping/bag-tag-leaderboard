@@ -1,6 +1,14 @@
----
-layout: layout.njk
-pageTitle: Season Leaderboard Export | Bag Tag Leaderboard
+---js
+const layout = "layout.njk";
+const pageTitle = "Season Leaderboard Export | Bag Tag Leaderboard";
+
+function permalink({ publicModel }) {
+  if (!publicModel.seasonLeaderboardImage) {
+    return false;
+  }
+
+  return "season-leaderboard-image/index.html";
+}
 ---
 {% if publicModel.seasonLeaderboardImage %}
   {% set exportModel = publicModel.seasonLeaderboardImage %}
