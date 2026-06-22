@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "data": {
+    "slug": "2026-rochester-mn-bag-tag-bag-tag-4-fivw5t",
+    "source": {
+      "type": "udisc",
+      "url": "https://udisc.com/events/2026-rochester-mn-bag-tag-bag-tag-4-FIVW5t/leaderboard?round=1&view=scores",
+      "fetchedAt": "2026-06-22T13:41:06.454Z"
+    },
+    "event": {
+      "name": "Bag Tag #4",
+      "eventDate": "2026-06-21",
+      "isMajor": false
+    },
+    "participants": [
+      {
+        "playerName": "Alan Liudahl",
+        "finishPlace": 1,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Jacob Boerner",
+        "finishPlace": 2,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Rich Johnson",
+        "finishPlace": 2,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Jared Pittman",
+        "finishPlace": 4,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Michael Merschbrock",
+        "finishPlace": 5,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Travis Gergen",
+        "finishPlace": 6,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Kevin Lamping",
+        "finishPlace": 7,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Derek Swygman",
+        "finishPlace": 7,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Korbin Rollie",
+        "finishPlace": 9,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Troy &quot;NoGripp&quot; Hauck",
+        "finishPlace": 10,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      }
+    ]
+  }
+}

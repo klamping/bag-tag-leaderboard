@@ -2,6 +2,29 @@
   "schemaVersion": 1,
   "items": [
     {
+      "id": "event_0004",
+      "slug": "2026-rochester-mn-bag-tag-bag-tag-4-fivw5t",
+      "name": "Bag Tag #4",
+      "eventDate": "2026-06-21",
+      "isMajor": false,
+      "udiscUrl": "https://udisc.com/events/2026-rochester-mn-bag-tag-bag-tag-4-FIVW5t/leaderboard?round=1&view=scores",
+      "importPath": "data/imports/2026-rochester-mn-bag-tag-bag-tag-4-fivw5t.json",
+      "resultIds": [
+        "result_0039",
+        "result_0040",
+        "result_0041",
+        "result_0042",
+        "result_0043",
+        "result_0044",
+        "result_0045",
+        "result_0046",
+        "result_0047",
+        "result_0048"
+      ],
+      "createdAt": "2026-06-22T13:41:06.454Z",
+      "updatedAt": "2026-06-22T13:41:06.454Z"
+    },
+    {
       "id": "event_0003",
       "slug": "2026-rochester-mn-bag-tag-bag-tag-3-aqvuit",
       "name": "Bag Tag #3",
