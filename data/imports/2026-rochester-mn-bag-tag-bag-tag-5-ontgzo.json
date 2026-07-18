@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "data": {
+    "slug": "2026-rochester-mn-bag-tag-bag-tag-5-ontgzo",
+    "source": {
+      "type": "udisc",
+      "url": "https://udisc.com/events/2026-rochester-mn-bag-tag-bag-tag-5-ONtGZO/leaderboard?round=1&view=scores",
+      "fetchedAt": "2026-07-18T20:24:05.952Z"
+    },
+    "event": {
+      "name": "Bag Tag #5",
+      "eventDate": "2026-07-12",
+      "isMajor": false
+    },
+    "participants": [
+      {
+        "playerName": "Alan Liudahl",
+        "finishPlace": 1,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Jacob Boerner",
+        "finishPlace": 2,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Rich Johnson",
+        "finishPlace": 2,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Kevin Lamping",
+        "finishPlace": 4,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Stuart Schwenke",
+        "finishPlace": 4,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Michael Merschbrock",
+        "finishPlace": 6,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Seth kim",
+        "finishPlace": 7,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Korbin Rollie",
+        "finishPlace": 8,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      },
+      {
+        "playerName": "Troy &quot;NoGripp&quot; Hauck",
+        "finishPlace": 8,
+        "didNotFinish": false,
+        "reviewDecision": "keep"
+      }
+    ]
+  }
+}
