@@ -17,8 +17,8 @@ pageTitle: 2026 Rochester, MN Bag Tag
       <table class="leaderboard-table">
         <thead>
           <tr>
-            <th scope="col">Season Standing</th>
-            <th scope="col">Season<br />Total</th>
+            <th scope="col" class="season-standing">Season Standing</th>
+            <th scope="col" class="leaderboard-season-total">Season<br />Total</th>
             <th scope="col">Player</th>
             {% for event in publicModel.homepage.leaderboardEvents %}
               <th scope="col" aria-label="{{ event.accessibleLabel }}">{{ event.shortDate }}</th>
@@ -28,8 +28,8 @@ pageTitle: 2026 Rochester, MN Bag Tag
         <tbody>
           {% for row in publicModel.homepage.leaderboardRows %}
             <tr>
-              <td>{{ row.seasonStanding }}</td>
-              <td class="leaderboard-total-cell">
+              <td class="season-standing">{{ row.seasonStanding }}</td>
+              <td class="leaderboard-total-cell leaderboard-season-total">
                 <span class="leaderboard-points-value">{{ row.seasonPoints }}</span>
                 <span class="leaderboard-points-label">pts</span>
               </td>
@@ -101,6 +101,34 @@ pageTitle: 2026 Rochester, MN Bag Tag
 {% endif %}
 
 {% include "points-rules-summary.njk" %}
+
+<section class="panel stack">
+  <div class="section-heading stack-tight">
+    <h2>Remaining Schedule</h2>
+  </div>
+  <ul class="event-list">
+    <li class="event-tile panel stack-tight">
+      <span class="event-date">August 2</span>
+      <span>Driftless (Major)</span>
+    </li>
+    <li class="event-tile panel stack-tight">
+      <span class="event-date">August 16</span>
+      <span>Spring Valley</span>
+    </li>
+    <li class="event-tile panel stack-tight">
+      <span class="event-date">September 6</span>
+      <span>Mantorville</span>
+    </li>
+    <li class="event-tile panel stack-tight">
+      <span class="event-date">September 27</span>
+      <span>St Charles</span>
+    </li>
+    <li class="event-tile panel stack-tight">
+      <span class="event-date">October 11</span>
+      <span>Championship, Driftless</span>
+    </li>
+  </ul>
+</section>
 
 {% if publicModel.homepage.events.length %}
   <section class="panel stack">

@@ -1201,8 +1201,11 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
   assert.match(homepage, elementWithClassPattern("div", "leaderboard-table-scroll"));
   assert.match(homepage, /<link rel="stylesheet" href="\/styles\/site\.css">/i);
   assert.match(homepage, elementWithClassPattern("table", "leaderboard-table"));
-  assert.match(homepage, /<th scope="col">Season Standing<\/th>/i);
-  assert.match(homepage, /<th scope="col">Season<br\s*\/?>Total<\/th>/i);
+  assert.match(homepage, /<th scope="col"[^>]*class="[^"]*season-standing[^"]*"[^>]*>Season Standing<\/th>/i);
+  assert.match(
+    homepage,
+    /<th scope="col"[^>]*class="[^"]*leaderboard-season-total[^"]*"[^>]*>Season<br\s*\/?>Total<\/th>/i
+  );
   assert.match(homepage, /<th scope="col">Player<\/th>/i);
   assert.match(
     homepage,
@@ -1213,13 +1216,27 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
     /<th scope="col" aria-label="Summer Sizzler on 2026-05-10">5\/10<\/th>/i
   );
   assert.match(homepage, elementWithClassPattern("td", "leaderboard-total-cell"));
-  assert.match(homepage, /<td>1<\/td>\s*<td\b[^>]*class="[^"]*leaderboard-total-cell[^"]*"/i);
+  assert.match(
+    homepage,
+    /<td\b[^>]*class="[^"]*season-standing[^"]*"[^>]*>1<\/td>\s*<td\b[^>]*class="[^"]*leaderboard-total-cell[^"]*leaderboard-season-total[^"]*"/i
+  );
   assert.match(homepage, /<th scope="row"[^>]*class="[^"]*leaderboard-player-cell[^"]*"/i);
   assert.match(homepage, elementWithClassPattern("details", "leaderboard-breakdown-toggle"));
   assert.match(homepage, elementWithClassPattern("span", "leaderboard-name"));
   assert.match(homepage, />pts</i);
   assert.match(homepage, />Show breakdown</i);
   assert.match(homepage, />Hide breakdown</i);
+  assert.match(homepage, />Remaining Schedule</i);
+  assert.match(homepage, />August 2/i);
+  assert.match(homepage, />Driftless \(Major\)</i);
+  assert.match(homepage, />August 16/i);
+  assert.match(homepage, />Spring Valley</i);
+  assert.match(homepage, />September 6/i);
+  assert.match(homepage, />Mantorville</i);
+  assert.match(homepage, />September 27/i);
+  assert.match(homepage, />St Charles</i);
+  assert.match(homepage, />October 11/i);
+  assert.match(homepage, />Championship, Driftless</i);
   assert.match(homepage, /<td\b[^>]*class="[^"]*leaderboard-total-cell[^"]*"[\s\S]*?>[\s\S]*?>30<(?=[\s\S]*?>pts<)/i);
   assert.match(homepage, /<details\b[^>]*class="[^"]*leaderboard-breakdown-toggle[^"]*"[\s\S]*?<summary\b[^>]*class="[^"]*leaderboard-summary[^"]*"/i);
   assert.match(
@@ -1323,7 +1340,11 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
   );
   assert.match(
     stylesheet,
-    /\.leaderboard-table\s*>\s*thead\s+th:not\(:nth-child\(2\)\),\s*\.leaderboard-table\s*>\s*tbody\s*>\s*tr\s*>\s*:is\(th,\s*td\):not\(:nth-child\(2\)\)\s*\{[\s\S]*?text-align:\s*center;/i
+    /\.leaderboard-table\s*>\s*thead\s+th\.leaderboard-season-total,\s*\.leaderboard-table\s*>\s*tbody\s*>\s*tr\s*>\s*td\.leaderboard-season-total\s*\{[\s\S]*?text-align:\s*center;/i
+  );
+  assert.match(
+    stylesheet,
+    /\.leaderboard-table\s*>\s*thead\s+th\.season-standing,\s*\.leaderboard-table\s*>\s*tbody\s*>\s*tr\s*>\s*td\.season-standing\s*\{[\s\S]*?width:\s*5em;[\s\S]*?white-space:\s*normal;/i
   );
   assert.match(stylesheet, /\.leaderboard-total-cell\s*\{/i);
   assert.match(stylesheet, /\.leaderboard-player-cell\s*\{/i);
@@ -1653,6 +1674,8 @@ test("siteBuildCommand renders a single empty-state message when no events exist
   assert.equal(emptyMatches.length, 1);
   assert.doesNotMatch(homepage, />Leaderboard</i);
   assert.doesNotMatch(homepage, />Events</i);
+  assert.match(homepage, />Remaining Schedule</i);
+  assert.match(homepage, />Championship, Driftless</i);
   await assert.rejects(
     fs.readFile(path.join(tempDirectory, "dist", "season-leaderboard-image", "index.html"), "utf8"),
     { code: "ENOENT" }

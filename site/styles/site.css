@@ -219,9 +219,15 @@ h2 {
   text-align: center;
 }
 
-.leaderboard-table > thead th:nth-child(2),
-.leaderboard-table > tbody > tr > :is(th, td):nth-child(2) {
-  text-align: left;
+.leaderboard-table > thead th.leaderboard-season-total,
+.leaderboard-table > tbody > tr > td.leaderboard-season-total {
+  text-align: center;
+}
+
+.leaderboard-table > thead th.season-standing,
+.leaderboard-table > tbody > tr > td.season-standing {
+  width: 5em;
+  white-space: normal;
 }
 
 .leaderboard-total-cell,
@@ -229,8 +235,9 @@ h2 {
   font-variant-numeric: tabular-nums;
 }
 
-.leaderboard-total-cell {
+table th.leaderboard-total-cell {
   min-width: 5.5rem;
+  text-align: center;
 }
 
 .leaderboard-points-value,
