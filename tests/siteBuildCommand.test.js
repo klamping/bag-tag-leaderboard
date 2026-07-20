@@ -210,6 +210,7 @@ test("buildPublicModel returns homepage and event page models from the canonical
       playerName: "Alice Smith",
       eventsPlayed: 1,
       seasonPoints: 10,
+      seasonStanding: 1,
       eventOverview: [
         {
           eventSlug: "spring-showdown",
@@ -247,6 +248,7 @@ test("buildPublicModel returns homepage and event page models from the canonical
       playerName: "Bob Jones",
       eventsPlayed: 1,
       seasonPoints: 2,
+      seasonStanding: 2,
       eventOverview: [
         {
           eventSlug: "spring-showdown",
@@ -330,6 +332,140 @@ test("buildPublicModel returns homepage and event page models from the canonical
   ]);
 });
 
+test("buildPublicModel assigns shared-place season standings on the homepage", () => {
+  const store = {
+    players: {
+      schemaVersion: 1,
+      items: [
+        {
+          id: "player_0001",
+          name: "Alice Smith",
+          createdAt: "2026-06-01T00:00:00.000Z",
+          updatedAt: "2026-06-01T00:00:00.000Z",
+        },
+        {
+          id: "player_0002",
+          name: "Bob Jones",
+          createdAt: "2026-06-01T00:00:00.000Z",
+          updatedAt: "2026-06-01T00:00:00.000Z",
+        },
+        {
+          id: "player_0003",
+          name: "Cara Diaz",
+          createdAt: "2026-06-01T00:00:00.000Z",
+          updatedAt: "2026-06-01T00:00:00.000Z",
+        },
+      ],
+    },
+    events: {
+      schemaVersion: 1,
+      items: [
+        {
+          id: "event_0000",
+          slug: "winter-warmup",
+          name: "Winter Warmup",
+          eventDate: "2025-12-15",
+          isMajor: false,
+          udiscUrl: "https://udisc.com/events/winter-warmup",
+          importPath: "data/imports/winter-warmup.json",
+          resultIds: [],
+          createdAt: "2026-06-01T00:00:00.000Z",
+          updatedAt: "2026-06-01T00:00:00.000Z",
+        },
+        {
+          id: "event_0001",
+          slug: "spring-showdown",
+          name: "Spring Showdown",
+          eventDate: "2026-04-12",
+          isMajor: true,
+          udiscUrl: "https://udisc.com/events/spring-showdown",
+          importPath: "data/imports/spring-showdown.json",
+          resultIds: ["result_0001", "result_0002", "result_0003"],
+          createdAt: "2026-06-01T00:00:00.000Z",
+          updatedAt: "2026-06-01T00:00:00.000Z",
+        },
+      ],
+    },
+    results: {
+      schemaVersion: 1,
+      items: [
+        {
+          id: "result_0001",
+          eventId: "event_0001",
+          playerId: "player_0001",
+          finishPlace: 1,
+          startingTag: 3,
+          attendancePoints: 2,
+          placementPoints: 8,
+          startingTagBonusPoints: 10,
+          tagOneBonusPoints: 0,
+          beatYourTagBonusPoints: 0,
+          eventTotalPoints: 20,
+          createdAt: "2026-06-01T00:00:00.000Z",
+          updatedAt: "2026-06-01T00:00:00.000Z",
+        },
+        {
+          id: "result_0002",
+          eventId: "event_0001",
+          playerId: "player_0002",
+          finishPlace: 1,
+          startingTag: 4,
+          attendancePoints: 2,
+          placementPoints: 8,
+          startingTagBonusPoints: 10,
+          tagOneBonusPoints: 0,
+          beatYourTagBonusPoints: 0,
+          eventTotalPoints: 20,
+          createdAt: "2026-06-01T00:00:00.000Z",
+          updatedAt: "2026-06-01T00:00:00.000Z",
+        },
+        {
+          id: "result_0003",
+          eventId: "event_0001",
+          playerId: "player_0003",
+          finishPlace: null,
+          startingTag: 1,
+          attendancePoints: 2,
+          placementPoints: 0,
+          startingTagBonusPoints: 4,
+          tagOneBonusPoints: 0,
+          beatYourTagBonusPoints: 0,
+          eventTotalPoints: 6,
+          createdAt: "2026-06-01T00:00:00.000Z",
+          updatedAt: "2026-06-01T00:00:00.000Z",
+        },
+      ],
+    },
+  };
+
+  const model = buildPublicModel(store);
+
+  assert.deepEqual(
+    model.homepage.leaderboardRows.map(({ playerName, seasonPoints, seasonStanding }) => ({
+      playerName,
+      seasonPoints,
+      seasonStanding,
+    })),
+    [
+      {
+        playerName: "Alice Smith",
+        seasonPoints: 20,
+        seasonStanding: 1,
+      },
+      {
+        playerName: "Bob Jones",
+        seasonPoints: 20,
+        seasonStanding: 1,
+      },
+      {
+        playerName: "Cara Diaz",
+        seasonPoints: 6,
+        seasonStanding: 3,
+      },
+    ]
+  );
+});
+
 test("buildPublicModel adds homepage event breakdown totals across multiple events", () => {
   const store = createStore();
   store.events.items.push({
@@ -385,6 +521,7 @@ test("buildPublicModel adds homepage event breakdown totals across multiple even
       playerName: "Alice Smith",
       eventsPlayed: 2,
       seasonPoints: 20,
+      seasonStanding: 1,
       eventOverview: [
         {
           eventSlug: "spring-showdown",
@@ -441,6 +578,7 @@ test("buildPublicModel adds homepage event breakdown totals across multiple even
       playerName: "Bob Jones",
       eventsPlayed: 2,
       seasonPoints: 13,
+      seasonStanding: 2,
       eventOverview: [
         {
           eventSlug: "spring-showdown",
@@ -645,6 +783,7 @@ test("buildPublicModel excludes out-of-season events from homepage breakdowns an
       playerName: "Alice Smith",
       eventsPlayed: 1,
       seasonPoints: 10,
+      seasonStanding: 1,
       eventOverview: [
         {
           eventSlug: "spring-showdown",
@@ -682,6 +821,7 @@ test("buildPublicModel excludes out-of-season events from homepage breakdowns an
       playerName: "Bob Jones",
       eventsPlayed: 1,
       seasonPoints: 2,
+      seasonStanding: 2,
       eventOverview: [
         {
           eventSlug: "spring-showdown",
@@ -782,6 +922,7 @@ test("buildPublicModel sanitizes homepage seasonPoints for major bootstrap event
       playerName: "Alice Smith",
       eventsPlayed: 1,
       seasonPoints: 20,
+      seasonStanding: 1,
       eventOverview: [
         {
           eventSlug: "spring-showdown",
@@ -819,6 +960,7 @@ test("buildPublicModel sanitizes homepage seasonPoints for major bootstrap event
       playerName: "Bob Jones",
       eventsPlayed: 1,
       seasonPoints: 4,
+      seasonStanding: 2,
       eventOverview: [
         {
           eventSlug: "spring-showdown",
