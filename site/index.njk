@@ -17,6 +17,7 @@ pageTitle: 2026 Rochester, MN Bag Tag
       <table class="leaderboard-table">
         <thead>
           <tr>
+            <th scope="col">Season Standing</th>
             <th scope="col">Season<br />Total</th>
             <th scope="col">Player</th>
             {% for event in publicModel.homepage.leaderboardEvents %}
@@ -27,6 +28,7 @@ pageTitle: 2026 Rochester, MN Bag Tag
         <tbody>
           {% for row in publicModel.homepage.leaderboardRows %}
             <tr>
+              <td>{{ row.seasonStanding }}</td>
               <td class="leaderboard-total-cell">
                 <span class="leaderboard-points-value">{{ row.seasonPoints }}</span>
                 <span class="leaderboard-points-label">pts</span>
@@ -48,7 +50,7 @@ pageTitle: 2026 Rochester, MN Bag Tag
               {% endfor %}
             </tr>
             <tr class="leaderboard-breakdown-row">
-              <td colspan="{{ 2 + publicModel.homepage.leaderboardEvents.length }}">
+              <td colspan="{{ 3 + publicModel.homepage.leaderboardEvents.length }}">
                 <div class="leaderboard-breakdown">
                   <div class="table-scroll">
                     <table>

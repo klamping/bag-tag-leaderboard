@@ -1201,6 +1201,7 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
   assert.match(homepage, elementWithClassPattern("div", "leaderboard-table-scroll"));
   assert.match(homepage, /<link rel="stylesheet" href="\/styles\/site\.css">/i);
   assert.match(homepage, elementWithClassPattern("table", "leaderboard-table"));
+  assert.match(homepage, /<th scope="col">Season Standing<\/th>/i);
   assert.match(homepage, /<th scope="col">Season<br\s*\/?>Total<\/th>/i);
   assert.match(homepage, /<th scope="col">Player<\/th>/i);
   assert.match(
@@ -1212,6 +1213,7 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
     /<th scope="col" aria-label="Summer Sizzler on 2026-05-10">5\/10<\/th>/i
   );
   assert.match(homepage, elementWithClassPattern("td", "leaderboard-total-cell"));
+  assert.match(homepage, /<td>1<\/td>\s*<td\b[^>]*class="[^"]*leaderboard-total-cell[^"]*"/i);
   assert.match(homepage, /<th scope="row"[^>]*class="[^"]*leaderboard-player-cell[^"]*"/i);
   assert.match(homepage, elementWithClassPattern("details", "leaderboard-breakdown-toggle"));
   assert.match(homepage, elementWithClassPattern("span", "leaderboard-name"));
@@ -1230,7 +1232,7 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
   );
   assert.match(
     homepage,
-    /<tr\b[^>]*class="[^"]*leaderboard-breakdown-row[^"]*"[\s\S]*?<td\b[^>]*colspan="4"[^>]*>[\s\S]*?<div\b[^>]*class="[^"]*leaderboard-breakdown[^"]*"[\s\S]*?<caption\b[^>]*class="[^"]*visually-hidden[^"]*"[^>]*>Alice Smith scoring breakdown<\/caption>/i
+    /<tr\b[^>]*class="[^"]*leaderboard-breakdown-row[^"]*"[\s\S]*?<td\b[^>]*colspan="5"[^>]*>[\s\S]*?<div\b[^>]*class="[^"]*leaderboard-breakdown[^"]*"[\s\S]*?<caption\b[^>]*class="[^"]*visually-hidden[^"]*"[^>]*>Alice Smith scoring breakdown<\/caption>/i
   );
   assert.match(homepage, /<td\b[^>]*data-event-slug="spring-showdown"[^>]*>20<\/td>/i);
   assert.match(homepage, /<td\b[^>]*data-event-slug="summer-sizzler"[^>]*>10<\/td>/i);
