@@ -1,5 +1,7 @@
 module.exports = function configureEleventy(eleventyConfig) {
   eleventyConfig.addPassthroughCopy({ "site/styles": "styles" });
+  eleventyConfig.addPassthroughCopy({ "site/favicon.svg": "favicon.svg" });
+  eleventyConfig.addPassthroughCopy({ "site/favicon.png": "favicon.png" });
 
   return {
     dir: {

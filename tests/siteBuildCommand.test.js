@@ -1193,6 +1193,8 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
     "utf8"
   );
   const stylesheet = await fs.readFile(path.join(tempDirectory, "dist", "styles", "site.css"), "utf8");
+  const faviconSvg = await fs.readFile(path.join(tempDirectory, "dist", "favicon.svg"), "utf8");
+  const faviconPng = await fs.readFile(path.join(tempDirectory, "dist", "favicon.png"));
 
   // assert.match(homepage, /<title>Bag Tag Leaderboard<\/title>/i);
   // assert.match(homepage, />Bag Tag Leaderboard</i);
@@ -1200,6 +1202,8 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
   // assert.match(homepage, />Events</i);
   assert.match(homepage, elementWithClassPattern("div", "leaderboard-table-scroll"));
   assert.match(homepage, /<link rel="stylesheet" href="\/styles\/site\.css">/i);
+  assert.match(homepage, /<link rel="icon" href="\/favicon\.svg" type="image\/svg\+xml">/i);
+  assert.match(homepage, /<link rel="icon" href="\/favicon\.png" type="image\/png">/i);
   assert.match(homepage, elementWithClassPattern("table", "leaderboard-table"));
   assert.match(homepage, /<th scope="col"[^>]*class="[^"]*season-standing[^"]*"[^>]*>Season Standing<\/th>/i);
   assert.match(
@@ -1259,7 +1263,13 @@ test("siteBuildCommand builds homepage, event page, and stylesheet", async (t) =
   assert.match(homepage, /20<\/td>/i);
   assert.match(homepage, />Beat Your Tag Bonus</i);
   assert.match(homepage, />Tag 1 Bonus</i);
+  assert.match(eventPage, /<link rel="icon" href="\/favicon\.svg" type="image\/svg\+xml">/i);
+  assert.match(eventPage, /<link rel="icon" href="\/favicon\.png" type="image\/png">/i);
+  assert.match(pointsRulesPage, /<link rel="icon" href="\/favicon\.svg" type="image\/svg\+xml">/i);
+  assert.match(pointsRulesPage, /<link rel="icon" href="\/favicon\.png" type="image\/png">/i);
   assert.match(homepage, elementWithClassPattern("section", "points-rules-summary"));
+  assert.match(faviconSvg, /<svg/i);
+  assert.ok(faviconPng.length > 0);
   assert.match(homepage, />How points work</i);
   assert.match(
     homepage,
@@ -1754,6 +1764,14 @@ test("siteBuildCommand writes a season leaderboard PNG into dist when export is 
   assert.match(
     seasonLeaderboardImagePage,
     /<link rel="stylesheet" href="\.\.\/styles\/site\.css">/i
+  );
+  assert.match(
+    seasonLeaderboardImagePage,
+    /<link rel="icon" href="\.\.\/favicon\.svg" type="image\/svg\+xml">/i
+  );
+  assert.match(
+    seasonLeaderboardImagePage,
+    /<link rel="icon" href="\.\.\/favicon\.png" type="image\/png">/i
   );
   assert.match(
     seasonLeaderboardImagePage,
